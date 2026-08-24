@@ -1,0 +1,224 @@
+{
+  "main": {
+    "id": "f5d7e95498a7d30c",
+    "type": "split",
+    "children": [
+      {
+        "id": "893f2cba82c845d3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "adf29018372da703",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "59843557f2d18480",
+    "type": "split",
+    "children": [
+      {
+        "id": "990efbd417ed92e6",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5a6c297c1301a68d",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "a84c978fa846cfb6",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "1f8ee272986ee119",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "5852281e54881de8",
+    "type": "split",
+    "children": [
+      {
+        "id": "cfaedae6e92a02ff",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "705a339bbe6524e2",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "52b95cf99a7118a4",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "1e84b27c7f876011",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "a7a496830d88431a",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "d0bb87b26a4444c4",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false,
+      "obsidian-excalidraw-plugin:New drawing": false
+    }
+  },
+  "active": "adf29018372da703",
+  "lastOpenFiles": [
+    "MVP/design-notes/00-MASTER-PROJECT-STATUS.md",
+    "MVP/visual.md",
+    "Welcome.md",
+    "scope-and-goals.md",
+    "reverse-engineering/05-onnx-and-ai-pipeline.md",
+    "reverse-engineering/04-forensics-and-hashing.md",
+    "reverse-engineering/03-video-processing-and-ai.md",
+    "reverse-engineering/02-parsing-and-carving.md",
+    "reverse-engineering/01-cctv-and-dvr-basics.md",
+    "reverse-engineering/00-index.md",
+    "reverse-engineering",
+    "PS/team-and-recruitment.md",
+    "PS/requirements-and-modules.md",
+    "PS/problem-statement.md",
+    "PS/official-problem-statement.md",
+    "PS",
+    "project-overview.pdf",
+    "project-overview.md",
+    "project-overview.html",
+    "MVP/features/filesystem-parsing/filesystem-parsing.md",
+    "MVP/features/filesystem-parsing/Drawing 2026-08-23 20.53.16.excalidraw.md",
+    "MVP/features/disk-imaging/disk-imaging.md",
+    "MVP/features/device-identification/device-identification.md",
+    "MVP/features/filesystem-parsing",
+    "MVP/features/disk-imaging",
+    "MVP/features/device-identification",
+    "MVP/design-notes/workflow roadmap.md",
+    "MVP/design-notes/SOP_Electronic_Evidence.txt",
+    "MVP/design-notes/SOP_Electronic_Evidence.pdf",
+    "MVP/design-notes/17-gop-nal-units-and-remuxing-explained.md",
+    "MVP/design-notes/16-video-carving-and-remuxing.md",
+    "MVP/design-notes/15-sector-metadata-and-header-parsing.md",
+    "MVP/design-notes/14-detailed-vendor-signatures-and-phases.md",
+    "MVP/design-notes/13-dahua-cpplus-unified-engine.md",
+    "MVP/design-notes/12-vendor-identification-strategy.md",
+    "MVP/features"
+  ]
+}

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Project Overview - LOCUS</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 18mm 18mm 18mm;
+  }
+  body {
+    font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: #1a202c;
+    line-height: 1.5;
+    font-size: 10.5pt;
+    margin: 0;
+    padding: 0;
+  }
+  .header {
+    border-bottom: 2px solid #2b6cb0;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+  .title {
+    font-size: 24pt;
+    font-weight: 700;
+    color: #1a365d;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    font-size: 12pt;
+    color: #4a5568;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+  }
+  .meta-grid {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #ebf8ff;
+    border: 1px solid #bee3f8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    font-size: 9.5pt;
+  }
+  .meta-item {
+    margin-right: 24px;
+    margin-bottom: 4px;
+  }
+  .meta-label {
+    font-weight: 700;
+    color: #2c5282;
+  }
+  h2 {
+    font-size: 13pt;
+    color: #2b6cb0;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 4px;
+    margin-top: 22px;
+    margin-bottom: 10px;
+  }
+  p {
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-align: justify;
+  }
+  ul, ol {
+    margin-top: 0;
+    margin-bottom: 12px;
+    padding-left: 20px;
+  }
+  li {
+    margin-bottom: 6px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    margin-bottom: 16px;
+    font-size: 9.5pt;
+  }
+  th {
+    background-color: #2b6cb0;
+    color: #ffffff;
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 10px;
+    border: 1px solid #2b6cb0;
+  }
+  td {
+    padding: 7px 10px;
+    border: 1px solid #cbd5e0;
+  }
+  tr:nth-child(even) td {
+    background-color: #f7fafc;
+  }
+  .tech-badge {
+    display: inline-block;
+    background-color: #edf2f7;
+    color: #2d3748;
+    font-family: monospace;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9pt;
+  }
+  .footer {
+    margin-top: 30px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 8px;
+    font-size: 8.5pt;
+    color: #718096;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="title">LOCUS</div>
+  <div class="subtitle">Unified Multi-Vendor DVR/NVR Forensic Analysis Suite</div>
+</div>
+
+<div class="meta-grid">
+  <div class="meta-item"><span class="meta-label">Problem Statement ID:</span> 26150 (SIH 2026)</div>
+  <div class="meta-item"><span class="meta-label">Target Organization:</span> National Technical Research Organisation (NTRO)</div>
+  <div class="meta-item"><span class="meta-label">Category:</span> Software</div>
+  <div class="meta-item"><span class="meta-label">Theme:</span> Cybersecurity & Digital Forensics</div>
+</div>
+
+<h2>Executive Summary</h2>
+<p>
+  <strong>Locus</strong> is a next-generation, cross-platform desktop forensic application designed to solve the critical challenge of surveillance evidence fragmentation in law enforcement and intelligence operations.
+</p>
+<p>
+  Modern CCTV and DVR/NVR systems from major manufacturers—such as <strong>Dahua, CP Plus, Honeywell, HIKVISION, TP-Link, Godrej, Uniview, and Matrix</strong>—use proprietary file systems, raw disk structures, non-standard container headers, and custom video stream encodings. During criminal investigations, forensic officers are forced to juggle multiple vendor-specific playback utilities, struggle with timestamp drift across cameras, face extreme difficulty in recovering deleted footage, and risk evidence contamination.
+</p>
+<p>
+  <strong>Locus</strong> bridges this gap by offering a unified, vendor-agnostic software suite. It automates raw sector parsing, deleted video carving, multi-camera timeline synchronization, cryptographic evidence verification (<code>SHA-256</code> & <code>MD5</code>), and computer vision AI analytics—delivering legally defensible, court-ready forensic reports from a single desktop interface.
+</p>
+
+<h2>Key Features & Core Capabilities</h2>
+<ul>
+  <li><strong>Automated OEM & File System Identification:</strong> Detects proprietary partition layouts, magic header signatures, and video codecs automatically from raw disk dumps (<code>.dd</code>, <code>.raw</code>, <code>.E01</code>).</li>
+  <li><strong>Sector-Level Video Carving & Deleted Recovery:</strong> Bypasses corrupted or missing file system indexes by scanning raw drive sectors to carve deleted, overwritten, or damaged H.264/H.265 video stream fragments.</li>
+  <li><strong>Multi-Camera Synchronized Master Timeline:</strong> Calibrates internal DVR clock drifts and synchronizes heterogeneous camera channels into a unified chronological master timeline with multi-grid web playback.</li>
+  <li><strong>Cryptographic Chain-of-Custody Integrity:</strong> Calculates and verifies <code>SHA-256</code> and <code>MD5</code> checksums at disk ingestion, file carving, extraction, and report export—ensuring strict legal admissibility (ISO/IEC 27037 compliant).</li>
+  <li><strong>AI-Powered Computer Vision Analytics:</strong> Integrated YOLOv8 models process extracted frames to index detected targets (<em>people, vehicles, objects</em>), facial bounding boxes, and motion heatmaps—enabling instant timeline filter queries.</li>
+  <li><strong>Court-Ready Forensic Reporting:</strong> Generates audit-compliant PDF/HTML reports featuring execution logs, evidence hash parity tables, carved frame thumbnails, and investigator signatures.</li>
+</ul>
+
+<h2>Technical Architecture & Tech Stack</h2>
+<p>
+  Locus is built as a <strong>monorepo standalone desktop application</strong>, running a native Electron frontend wrapper powered by an embedded Python FastAPI engine.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Technology Stack</th>
+      <th>Role & Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Desktop Shell</strong></td>
+      <td><span class="tech-badge">Electron</span></td>
+      <td>Cross-platform desktop shell (Windows, Linux, macOS) with native OS file dialogs</td>
+    </tr>
+    <tr>
+      <td><strong>Frontend UI</strong></td>
+      <td><span class="tech-badge">React + TypeScript + Vite</span></td>
+      <td>High-performance SPA with interactive video grid & timeline player</td>
+    </tr>
+    <tr>
+      <td><strong>UI Styling</strong></td>
+      <td><span class="tech-badge">Tailwind CSS + ShadcnUI</span></td>
+      <td>Professional dark-mode design system matching enterprise forensic software</td>
+    </tr>
+    <tr>
+      <td><strong>Single Backend</strong></td>
+      <td><span class="tech-badge">FastAPI (Python 3.11+)</span></td>
+      <td>Unified local API, raw sector carving, PyAV stream remuxing, WebSockets</td>
+    </tr>
+    <tr>
+      <td><strong>Database</strong></td>
+      <td><span class="tech-badge">SQLite 3</span></td>
+      <td>Zero-configuration single-file database (<code>forensics.db</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>AI Engine</strong></td>
+      <td><span class="tech-badge">ONNX Runtime (YOLOv8)</span></td>
+      <td>Lightweight, hyper-fast local CPU/GPU object, face, and motion detection</td>
+    </tr>
+    <tr>
+      <td><strong>Evidence Hashing</strong></td>
+      <td><span class="tech-badge">Python hashlib</span></td>
+      <td>Cryptographic SHA-256 and MD5 chain-of-custody verification</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Team Roles & Responsibilities</h2>
+<table>
+  <thead>
+    <tr>
+      <th style="width: 8%;">Role #</th>
+      <th style="width: 25%;">Position</th>
+      <th>Primary Responsibilities</th>
+      <th style="width: 25%;">Core Stack</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1</strong></td>
+      <td><strong>Systems Architect & Team Lead</strong></td>
+      <td>Overall system design, database schemas, API contracts, SIH presentation strategy</td>
+      <td>FastAPI, Architecture, SQLite, Docker</td>
+    </tr>
+    <tr>
+      <td><strong>2</strong></td>
+      <td><strong>Full-Stack Developer</strong></td>
+      <td>Case intake UI, evidence management APIs, REST/WebSocket integration</td>
+      <td>React, TypeScript, FastAPI, SQLite</td>
+    </tr>
+    <tr>
+      <td><strong>3</strong></td>
+      <td><strong>Python & Systems Forensics Dev</strong></td>
+      <td>Binary disk image parsing, OEM header carving, PyAV/FFmpeg stream remuxing</td>
+      <td>Python, Binary I/O, PyAV, FFmpeg</td>
+    </tr>
+    <tr>
+      <td><strong>4</strong></td>
+      <td><strong>AI / Computer Vision Dev</strong></td>
+      <td>ONNX Runtime pipeline, YOLOv8 object/face detection, motion heatmaps</td>
+      <td>Python, ONNX, YOLOv8, OpenCV</td>
+    </tr>
+    <tr>
+      <td><strong>5</strong></td>
+      <td><strong>Frontend & UI/UX Specialist</strong></td>
+      <td>Multi-camera video sync player, interactive timeline matrix, report UI</td>
+      <td>React, TypeScript, Canvas, Video APIs</td>
+    </tr>
+    <tr>
+      <td><strong>6</strong></td>
+      <td><strong>Docs, QA & Research Specialist</strong></td>
+      <td>OEM comparative paper, SOPs, legal hash validation testing, final SIH slides</td>
+      <td>Technical Writing, QA, Research, SOPs</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Key Differentiators</h2>
+<ul>
+  <li><strong>Cross-Platform Linux & Windows Compatibility:</strong> While commercial tools are locked strictly to Windows, Locus runs natively on Linux (which NTRO and defense agencies prefer).</li>
+  <li><strong>Zero-Configuration Desktop Executable:</strong> Ships as a single <code>.exe</code> or <code>.AppImage</code>. No complex server setups or database installations required.</li>
+  <li><strong>Integrated Computer Vision & Timeline Search:</strong> Combines raw sector carving with instant natural language AI indexing (<em>"Find red car on Channel 2"</em>).</li>
+  <li><strong>Lightweight ONNX AI Execution:</strong> Runs fast on standard laptop CPUs without requiring expensive $2,000 gaming GPUs.</li>
+</ul>
+
+<div class="footer">
+  Locus Project Overview • Smart India Hackathon 2026 (PS 26150 - NTRO)
+</div>
+
+</body>
+</html>
