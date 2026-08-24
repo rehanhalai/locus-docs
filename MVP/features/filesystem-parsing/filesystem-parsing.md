@@ -1,6 +1,6 @@
 # Feature 03: File System & Header Parsing
 
-**Back to [[Projects/locus/MVP/MVP|MVP]]**
+**Back to [[MVP/MVP|MVP]]**
 
 ---
 

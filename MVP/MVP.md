@@ -6,66 +6,69 @@
 
 ## MVP Overview
 
-The **Locus MVP** is structured into **8 modular feature specifications**, mapping directly to the official PS 26150 requirements. Each feature contains the explaination and how the featue is structured in the MVP.
+The **Locus MVP** is structured into **8 core backend feature specifications** (+ 1 deferred reporting module), mapping directly to the official PS 26150 requirements. Each feature contains the explanation and technical architecture of the MVP.
 
 ---
 
-### How the features will be structured to collaborate with each others
+### How the features are structured to collaborate with each other
 
-[1. Physical Acquisition] ──► [2. Case Ingestion & Hashing] ──► [3. Device Identification]
-
- [6. Multi-Camera Timeline] ◄── [5. Local AI Analytics] ◄── [4. Sector Video Carving]
-
- [7. Evidence Search] ────► [8. Cryptographic Audit] ──────► [9. Court PDF Report]
+```text
+[1. Physical Acquisition & Ingestion] ──► [2. Device Identification] ──► [3. Sector Header Parsing]
+                                                                                   │
+                                                                                   ▼
+[6. AI Analytics & Indexing] ◄──────── [5. Timeline Synchronization] ◄── [4. Sector Video Carving]
+           │
+           ▼
+[7. Evidence Search & Querying] ──────► [8. Hash Verification & Export] ──► [9. Court PDF Report*]
+```
 
 ---
 
-#### 1. Physical Acquisition _(Pre-App Hardware Step)_
+#### 1. Physical Acquisition & Case Ingestion
+- **What happens:** The investigator either acquires a live raw hard drive via hardware write-blocker using the embedded `dc3dd` engine (with bad sector zero-padding) or loads a pre-existing forensic image (`.dd`/`.raw`). Locus locks the image in **strict Read-Only mode** and generates baseline `SHA-256` and `MD5` cryptographic hashes.
 
-- **What happens:** The investigator connects the seized evidence hard drive to a physical hardware write-blocker and creates a 1-to-1 byte-level bit-stream disk image file (`case_101.dd` or `.raw`).
+#### 2. Device & File System Identification
+- **What happens:** Locus scans the raw sector headers looking for manufacturer "magic signatures" (e.g., `DHAV` for Dahua/CP Plus, `HKFS` for Hikvision). Within 1 second, it detects the DVR model, partition layout, sector size, and camera channel count.
 
-#### 2. Case Intake & Baseline Hashing
-
-- **What happens:** The investigator opens **Locus**, clicks **"New Case"**, and selects the `.dd` file using the native file picker. Locus locks the file in **strict Read-Only mode** and instantly calculates baseline `SHA-256` and `MD5` cryptographic hashes to freeze the evidence state.
-
-#### 3. Device & File System Identification
-
-- **What happens:** Locus scans the raw sector headers of the `.dd` file looking for manufacturer "magic signatures" (e.g., `DHAV` for Dahua, `HKFS` for Hikvision). Within 1 second, it detects the DVR model, partition structure, and camera channel count.
+#### 3. Sector Header Parsing & Mapping
+- **What happens:** Locus scans disk sectors, unpacks proprietary 32-byte binary headers using Python `struct.unpack()`, and builds a **Master Sector Map** in SQLite (`stream_headers` table) that maps out where every camera channel's frames begin and end.
 
 #### 4. Sector Video Carving & Stream Remuxing
+- **What happens:** The background Python worker reads raw sectors according to the Master Sector Map, strips proprietary wrapper headers, snaps to the nearest I-Frame (GOP alignment), and remuxes raw H.264/H.265 frames into web-playable `.mp4` clips via PyAV/FFmpeg using **zero-transcoding stream copy**.
 
-- **What happens:** The background Python worker scans raw drive sectors (including deleted/unallocated space), finds orphaned video frame headers, extracts raw H.264/H.265 chunks, and remuxes them using PyAV/FFmpeg into standard web-playable `.mp4` clips.
+#### 5. Multi-Camera Master Timeline Sync
+- **What happens:** Locus normalizes timestamp drifts across different camera channels using non-destructive virtual calibration layers (`timeline_calibrations`). A 60 Hz master clock coordinates multi-camera grid playback without modifying source evidence.
 
-#### 5. Local AI Video Analytics (ONNX Engine)
-
-- **What happens:** As clips are carved, our local ONNX Runtime engine extracts 1 frame per second and runs YOLOv8 to detect targets (_people, vehicles, objects, motion_). It indexes these tags and timestamps into the local SQLite database.
-
-#### 6. Multi-Camera Master Timeline Sync
-
-- **What happens:** Locus normalizes timestamp drifts across different camera channels and plots them on a single master timeline bar. The investigator can scrub the timeline, playing multiple camera feeds synchronously at the exact same real-world second.
+#### 6. Local AI Video Analytics (ONNX Engine)
+- **What happens:** As clips are carved, Locus uses OpenCV MOG2 to detect motion voids (skipping dead time), then runs lightweight YOLOv8 models locally via ONNX Runtime to detect persons and vehicles, indexing event timestamps into SQLite.
 
 #### 7. Evidence Search & Event Filtering
+- **What happens:** The investigator executes fast parameterized queries (camera + time range + object type + confidence). Locus queries the indexed SQLite database in under 2 milliseconds and populates a clickable thumbnail gallery and timeline heatmap markers.
 
-- **What happens:** The investigator types a filter query in the React search bar (e.g., _"Show all red vehicles on Camera 2 between 2:00 PM and 3:00 PM"_). Locus queries SQLite in 2 milliseconds and highlights match markers directly on the timeline player.
+#### 8. Cryptographic Hash Verification & Integrity Export
+- **What happens:** Upon export, Locus re-verifies the source image hash, slices the carved video using zero-transcoding copy, calculates the output SHA-256/MD5 hashes, and generates a cryptographic audit sidecar (`.sync.json`) proving an unbroken chain of custody.
 
-#### 8. Cryptographic Hash Verification & Chain-of-Custody Audit
+#### 9. Court-Ready Forensic PDF Report Export *(Future / UI Reporting Module)*
+- **What happens:** Compiles case metadata, baseline disk hashes, carved clip tables, AI detection summaries, and investigator audit logs into a legally formatted PDF report.
+- **Specification Status:** *Note: This feature is deferred from the current low-level backend technical specifications due to its straightforward UI/template nature (HTML/PDF rendering), but remains an integral component of the product roadmap.*
 
-- **What happens:** The investigator clicks **"Verify Integrity"**. Locus recalculates hashes and verifies 100% match parity against the original baseline ingestion hashes, proving the evidence was never tampered with.
-
-#### 9. Court-Ready Forensic PDF Report Export
-
-- **What happens:** With 1 click, Locus compiles case metadata, baseline disk hashes, carved clip tables, AI detection summaries, and investigator audit logs into a legally formatted, court-ready PDF report ready for submission to judges.
+---
 
 ## Feature Modules Index
 
-- **[[device-identification]]** — Automatic OEM & hardware signature detection (Dahua, Hikvision, CP Plus, etc.)
-- **[[disk-imaging]]** — Bit-stream raw disk dump ingestion (`.dd`/`.raw`) with write-block safeguard
-- **[[filesystem-parsing]]** — Unmasking proprietary DVR filesystems (DHFS, Hikvision raw layouts) & container headers
-- **[[video-carving]]** — Sector-level carving of deleted or damaged H.264/H.265 video fragments
-- **[[timeline-sync]]** — Multi-camera timestamp normalization & master synchronized timeline player
-- **[[evidence-hashing]]** — Dual SHA-256 / MD5 cryptographic evidence verification & immutable audit trail
-- **[[ai-analytics]]** — Local YOLOv8 object detection (people, vehicles) & motion indexing via ONNX Runtime
-- **[[forensic-reporting]]** — Automated court-ready PDF forensic report export with hash parity tables
+Each feature below has its own dedicated folder inside `MVP/features/` with a comprehensive specification document. Reading these documents in order gives a complete understanding of the entire Locus backend architecture.
+
+| # | Feature Folder | Document | Summary | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| 01 | [[disk-imaging]] | [disk-imaging.md](./features/disk-imaging/disk-imaging.md) | Live physical drive acquisition via embedded `dc3dd`, bad sector defense, and dual SHA-256/MD5 baseline hashing | **Complete** |
+| 02 | [[device-identification]] | [device-identification.md](./features/device-identification/device-identification.md) | Automatic OEM & magic byte signature detection (Dahua, Hikvision, CP Plus, etc.) | **Complete** |
+| 03 | [[filesystem-parsing]] | [filesystem-parsing.md](./features/filesystem-parsing/filesystem-parsing.md) | Binary header decoding, sector mapping, and building the Master Sector Map in SQLite | **Complete** |
+| 04 | [[video-carving]] | [video-carving.md](./features/video-carving/video-carving.md) | Sector-level carving of raw H.264/H.265 frames with GOP alignment and zero-transcoding remuxing | **Complete** |
+| 05 | [[timeline-sync]] | [timeline-sync.md](./features/timeline-sync/timeline-sync.md) | Multi-camera timestamp normalization, non-destructive calibration layer, and 60 Hz master clock | **Complete** |
+| 06 | [[ai-analytics]] | [ai-analytics.md](./features/ai-analytics/ai-analytics.md) | Local YOLOv8 object detection (persons, vehicles) & motion void indexing via ONNX Runtime | **Complete** |
+| 07 | [[evidence-search]] | [evidence-search.md](./features/evidence-search/evidence-search.md) | SQLite query layer for filtering, searching, and browsing AI detection events | **Complete** |
+| 08 | [[evidence-hashing]] | [evidence-hashing.md](./features/evidence-hashing/evidence-hashing.md) | Cryptographic hash verification, zero-transcoding export, and audit trail sidecar generation | **Complete** |
+| 09 | `forensic-reporting` | *Deferred* | Automated court-ready PDF forensic report export with hash parity tables | *Future / Low Complexity* |
 
 ---
 
@@ -84,15 +87,15 @@ The **Locus MVP** is structured into **8 modular feature specifications**, mappi
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                      FASTAPI PYTHON BACKEND ENGINE                        │
 │                                                                           │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌─────────────────────────┐  │
-│  │ Device Identification│ 02. Acquisition │  │ 03. FS & Header Parser  │  │
-│  └──────────────────┘  └──────────────────┘  └─────────────────────────┘  │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌─────────────────────────┐  │
-│  │ 04. Sector Carver│  │ 05. Timeline Sync│  │ 06. Cryptographic Hash  │  │
-│  └──────────────────┘  └──────────────────┘  └─────────────────────────┘  │
-│  ┌──────────────────┐  ┌──────────────────┐                               │
-│  │ 07. ONNX AI Engine│ │ 08. PDF Exporter │                               │
-│  └──────────────────┘  └──────────────────┘                               │
+│  ┌────────────────────────┐  ┌────────────────────────┐  ┌─────────────┐  │
+│  │ 01. Acquisition (dc3dd)│  │ 02. Device ID & Scanners│  │ 03. FS Parser│  │
+│  └────────────────────────┘  └────────────────────────┘  └─────────────┘  │
+│  ┌────────────────────────┐  ┌────────────────────────┐  ┌─────────────┐  │
+│  │ 04. Sector Carver      │  │ 05. Timeline Sync Bus  │  │ 06. ONNX AI │  │
+│  └────────────────────────┘  └────────────────────────┘  └─────────────┘  │
+│  ┌────────────────────────┐  ┌────────────────────────┐                   │
+│  │ 07. Evidence Search    │  │ 08. Hash Verification  │                   │
+│  └────────────────────────┘  └────────────────────────┘                   │
 └─────────────────────────────────────┬─────────────────────────────────────┘
                                       │
                                       ▼

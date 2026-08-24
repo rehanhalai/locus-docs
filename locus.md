@@ -13,7 +13,7 @@
 
 ## Navigation
 
-- [[Projects/locus/MVP/MVP|MVP]] — **MVP Architecture & Feature Specifications** (Core Features 01–08)
+- [[MVP/MVP|MVP]] — **MVP Architecture & Feature Specifications** (Core Features 01–08)
 - [[project-overview]] — Complete Project Overview & Executive Summary (Shareable Markdown)
 - [project-overview.pdf](file:///home/rehanhalai/code/rehanhalai/Projects/locus/project-overview.pdf) — Exported PDF Document (Ready for Sharing)
 - [[official-problem-statement]] — Complete, unedited official text of PS 26150

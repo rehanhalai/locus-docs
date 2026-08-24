@@ -1,6 +1,6 @@
 # Feature 02: Device & File System Identification
 
-**Back to [[Projects/locus/MVP/MVP|MVP]]**
+**Back to [[MVP/MVP|MVP]]**
 
 ---
 
