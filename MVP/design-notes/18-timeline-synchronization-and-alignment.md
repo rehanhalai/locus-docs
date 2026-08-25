@@ -27,10 +27,10 @@ In multi-camera surveillance forensics, video streams from different channels ar
 Locus **never** alters the original byte payloads, carved MP4 frame timestamps, or the raw `stream_headers` SQLite index. Time alignment is achieved via a **Non-Destructive Calibration Layer** mapped over the physical timeline.
 
 ```
-[ Raw Forensic Image (.dd) / Raw Extracted Streams ]  <-- Immutable Ground Truth
+[ Raw Forensic Image (.dd) ]                          <-- Unmodified Source Evidence Bytes
                            │
                            ▼
-[ Step 5/6: SQLite `stream_headers` Index ]           <-- Unaltered Header Timestamps
+[ Step 5/6: SQLite `stream_headers` Index ]           <-- Parsed Source In-Stream Timestamps
                            │
                            ▼
 [ Step 7: `timeline_calibrations` Metadata Layer ]    <-- Non-Destructive Virtual Offsets
@@ -68,8 +68,8 @@ CREATE TABLE IF NOT EXISTS timeline_calibrations (
     channel_id INTEGER NOT NULL,
     time_offset_ms INTEGER NOT NULL DEFAULT 0,    -- Static delta: Δt (in ms)
     drift_rate_ppm REAL NOT NULL DEFAULT 0.0,     -- Dynamic drift: α (ppm)
-    anchor_raw_timestamp INTEGER,                 -- Base reference timestamp
-    anchor_calibrated_utc INTEGER,                -- Known ground truth timestamp
+    anchor_raw_timestamp INTEGER,                 -- Base reference source timestamp
+    anchor_calibrated_utc INTEGER,                -- Known reference UTC timestamp
     calibration_method TEXT NOT NULL,             -- 'OSD_VISUAL', 'NTP_BASELINE', 'MANUAL'
     calibrated_by TEXT NOT NULL,
     FOREIGN KEY(channel_id) REFERENCES camera_channels(channel_id)
@@ -123,7 +123,7 @@ Locus provides three calibration workflows to establish ground-truth synchroniza
 
 1. **Synchronized Multi-View Split Export:** Locus exports a combined multi-grid MP4 (e.g., 2x2 matrix) composited into a single video frame with a burned-in Master Synchronized UTC banner.
 2. **Sidecar Synchronization File (`.sync.json`):** Exported `.mp4` files are accompanied by a forensic descriptor containing the channel file hash, applied offset ($\Delta t$), and calibration rationale.
-3. **Audit Trail Documentation:** Every manual calibration adjustment is permanently logged with the investigator's credentials for court admissibility.
+3. **Audit Trail Documentation:** Every manual calibration adjustment is permanently logged with the investigator's credentials, supporting forensic examination and evidence presentation.
 
 ---
 

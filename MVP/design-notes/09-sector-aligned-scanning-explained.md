@@ -10,9 +10,9 @@ Hard drives and SSDs do not write individual random bytes. Physical storage cont
 - **Standard Sector Size:** 512 bytes
 - **Advanced Format (4Kn) Sector Size:** 4,096 bytes (4 KB)
 
-Because of this hardware rule, DVR firmware **always starts writing a new frame header at the beginning of a sector**. A DVR will never start a `DHAV` or `HKFS` header at an arbitrary middle offset like byte 13 or byte 77.
+Because of this hardware convention, DVR firmware **typically starts writing a new frame header at the beginning of a sector boundary**. In all validated vendor profiles to date, headers are sector-aligned; however, uncharacterized firmware revisions or budget OEMs may deviate from this convention.
 
-Therefore, headers will always be found at mathematical multiples of 512:
+Therefore, headers are expected at mathematical multiples of 512:
 - **Sector 0:** Byte `0`
 - **Sector 1:** Byte `512`
 - **Sector 2:** Byte `1024`
@@ -66,4 +66,4 @@ with open("evidence.raw", "rb") as f:
 
 ## 4. Hardware Edge Case: 512-byte vs. 4096-byte (4K) Alignment
 - Modern large-capacity drives (e.g., 4TB+ Western Digital Purple surveillance drives) often use 4,096-byte physical sectors.
-- Since $4096 = 512 \times 8$, a 512-byte sector scanner will **automatically and naturally hit every 4,096-byte boundary** as well. This guarantees 100% compatibility across both legacy 512-byte drives and modern 4K drives.
+- Since $4096 = 512 \times 8$, a 512-byte sector scanner will **automatically hit every 4,096-byte boundary** as well. This provides robust coverage across both legacy 512-byte drives and modern 4K Advanced Format drives.

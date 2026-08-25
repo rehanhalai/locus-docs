@@ -1,23 +1,29 @@
-# 3. Video Processing & AI Analytics
+# 3. Media Remuxing & Secondary AI Triage Pipeline
 
-Once we have successfully "carved" out the raw video data from the disk sectors, we face the next problem: playing it and analyzing it.
+After forensic parsers extract valid byte ranges from disk image sectors, media processing and analytical triage operations begin.
 
-## The Video Container Problem
-When we carve data out of a Dahua or Hikvision DVR, it is often wrapped in a weird proprietary format (like a `.dav` file). Standard web browsers (like Chrome or Safari) cannot play `.dav` files. They only understand universal formats like `.mp4`.
+---
 
-## FFmpeg to the Rescue
-**FFmpeg** is an extremely powerful, open-source tool that is the undisputed king of video processing. 
-In our backend system, we will send the carved `.dav` file to FFmpeg. FFmpeg will decode the raw, proprietary video stream and convert it into a standard, web-playable `.mp4` file so it can be viewed in our React dashboard.
+## 1. PyAV / FFmpeg Remuxing Boundaries
 
-## How Video Works (Frames)
-A video isn't magic; it is just a fast sequence of pictures (called Frames), usually playing at 25 or 30 frames per second (fps).
-To use AI for analysis, we need to feed it individual pictures, not a continuous video stream.
-FFmpeg will extract specific frames (for example, taking 1 picture every second) from the video and hand them over to our AI model.
+Raw video payloads extracted from DVR sector headers (such as Dahua `.dav` or raw elementary streams) cannot be rendered directly in web browsers.
 
-## AI & Computer Vision (YOLO)
-**YOLO (You Only Look Once)** is a highly popular, open-source AI model designed for **Object Detection**.
-Our Python backend will feed the extracted picture frames into YOLO. 
-YOLO will draw invisible bounding boxes around things it recognizes and output data like: *"Person (98% confidence)", "Red Car (85% confidence)"*. 
+### Zero-Transcoding Remuxing
+Locus uses PyAV (Python C-bindings for FFmpeg) in **stream copy** mode (`-c:v copy`):
+- **Container Demuxing/Remuxing:** Wraps raw H.264/H.265 bitstream payloads into standard `.mp4` container structures.
+- **Zero Transcoding:** Compressed video bitstream payloads (H.264/H.265 NAL units) are preserved without decoding or re-encoding.
+- **Derived Artifact Hash:** The newly generated `.mp4` file is a derived artifact with its own cryptographic hash (`derived_artifact_sha256`), distinct from the source disk image hash. Both are tracked in provenance records.
+- **Forensic Boundary:** PyAV/FFmpeg is **not** used to parse proprietary DVR filesystems or raw disk layouts. It operates solely on byte streams already validated by forensic parsers.
 
-We take this AI text output and save it in our PostgreSQL database alongside the timestamp of that frame. 
-Now, when an investigator types *"Find all red cars"* in our React Web UI, our database instantly searches its records and points the user to the exact timestamp on the video where YOLO saw the car!
+---
+
+## 2. Secondary AI Triage Pipeline (YOLOv8 via ONNX Runtime)
+
+Video evidence processing extracts 1 frame thumbnail per second for local computer vision analysis:
+
+1. **Frame Sampling:** Extract keyframes from validated `.mp4` clips.
+2. **Local Inference:** Pass frames to local ONNX Runtime executing YOLOv8 object detection (`person`, `vehicle`).
+3. **Metadata Storage:** Index bounding box coordinates, confidence scores, and frame timestamps into SQLite (`case_meta.db`).
+4. **Investigator Triage:** Investigators search and filter events in the React UI and tag detections (`Verified`, `Rejected`, `Unreviewed`).
+
+> **Safety Reminder:** AI detection outputs are candidate suggestions for triage, not primary proof of identity.

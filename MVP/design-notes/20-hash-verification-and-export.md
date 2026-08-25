@@ -1,85 +1,85 @@
-# Step 9 Specification: Hash Verification & Integrity Export
+# Step 9 Specification: Cryptographic Hash Verification & Provenance Export
 
-*This document outlines the cryptographic and operational protocols used by Locus to guarantee that exported video evidence maintains a mathematically provable chain of custody, ensuring admissibility in a court of law.*
-
----
-
-## 1. The Court Admissibility Problem
-
-When an investigator extracts a 5-minute `.mp4` clip from a 1-Terabyte surveillance drive, they are essentially creating a *new* file. A defense attorney will naturally challenge the authenticity of this new file:
-- *"How do we know the police didn't alter the footage?"*
-- *"How do we know this isn't an AI-generated deepfake?"*
-- *"Where is the proof that this exact file came from the seized DVR?"*
-
-**The Goal of Step 9:** To create a mathematically unbreakable link between the original seized hard drive (the physical evidence) and the exported `.mp4` file (the digital presentation).
+**Back to [[MVP/MVP|MVP]]**
 
 ---
 
-## 2. The Zero-Transcoding Guarantee
+## 1. Provenance Verification & Derived Artifact Distinction
 
-To maintain true forensic integrity, Locus enforces a strict **Zero-Transcoding Policy** during export.
-- **No Re-encoding:** The system does not decode and re-encode the video pixels (which would alter the hash and potentially degrade image quality).
-- **Raw Byte Slicing:** Locus uses FFmpeg stream copying (`-c:v copy`) to lift the exact H.264/H.265 NAL units directly from the physical disk sectors and place them into an `.mp4` container.
-- **Result:** The video data presented in court is bit-for-bit identical to the video data written by the DVR motherboard.
+When an investigator extracts a video clip from a multi-terabyte surveillance disk image, the resulting `.mp4` file is a **DERIVED ARTIFACT**.
+
+In forensic examinations, establishing authenticity requires documenting:
+- The exact source evidence image from which bytes were carved.
+- The precise byte offset and sector range.
+- The extraction method and parser version used.
+- The cryptographic hash of both the source evidence and the newly created derived artifact.
+
+> [!IMPORTANT]
+> **Source Evidence Hash vs. Derived Artifact Hash:**  
+> The master evidence is the pre-acquired forensic image file (`.dd`, `.raw`, `.img`). An exported `.mp4` video file contains new container metadata (MP4 moov/mdat atoms) wrapping the extracted bitstream. Therefore:  
+> $$\text{Original Evidence Hash} \neq \text{Derived MP4 Hash}$$  
+> Locus independently computes and records both hashes in SQLite and the `.sync.json` provenance sidecar.
 
 ---
 
-## 3. The Cryptographic Hash Chain
+## 2. Stream-Preserving Remuxing (No Re-Encoding)
 
-When the investigator finalizes their trimmed clip and clicks "Export," Locus performs a sequential integrity check:
-
-1. **Verify Source Integrity:** Locus checks the current SHA-256 hash of the source disk (or `.dd` image) against the original hash generated during Step 1 (Acquisition). This proves the source hasn't been altered.
-2. **Export Video:** The raw bytes are sliced into `suspect_clip.mp4`.
-3. **Generate Output Hash:** Locus immediately calculates the SHA-256 hash of the newly created `suspect_clip.mp4`.
+To preserve forensic integrity during clip export, Locus utilizes **stream-preserving remuxing**:
+- **No Transcoding:** The system does not decode and re-compress video frames, preventing generational pixel degradation and preserving the original compressed elementary stream.
+- **Stream-Copy Packaging:** Locus uses PyAV/FFmpeg in stream-copy mode (`-c:v copy`) to package raw H.264/H.265 NAL units directly into standard `.mp4` containers.
+- **Forensic Preservation:** The compressed video payload bytes in the derived MP4 match the source disk bitstream.
 
 ---
 
-## 4. The Digital Audit Sidecar (`.sync.json`)
+## 3. Cryptographic Verification Sequence
 
-To prove the lineage of the new file, Locus generates a cryptographic "Receipt" that lives alongside the exported video. This is typically a `.json` file (and an accompanying human-readable `.pdf`).
+During clip export, Locus executes a sequential integrity routine:
 
-### Example Sidecar Schema:
+1. **Verify Source Image Integrity:** Locus computes a current SHA-256 hash across the source `.dd` image and compares it to the baseline hash registered during Step 3 (Ingestion). A match confirms the evidence image remained unmodified.
+2. **Stream Extraction & Remux:** The designated byte range is carved and remuxed into `derived_clip.mp4`.
+3. **Generate Artifact Digest:** Locus immediately computes `SHA-256` and `MD5` cryptographic digests of the derived `.mp4` artifact.
+4. **Generate Provenance Sidecar:** Writes the `.sync.json` descriptor file recording extraction parameters, parent evidence hashes, and artifact digests.
+
+---
+
+## 4. Digital Provenance Sidecar Schema (`.sync.json`)
+
 ```json
 {
   "export_metadata": {
-    "investigator_id": "Officer Smith (Badge: 1042)",
+    "investigator_id": "Officer Smith (ID: 1042)",
     "export_timestamp_utc": "2026-08-25T14:30:00Z",
-    "case_number": "CR-2026-8942",
+    "case_number": "CASE-2026-8942",
     "software_version": "Locus Forensics v1.0.0"
   },
   "source_evidence": {
-    "source_type": "Physical Drive (/dev/sdb)",
-    "source_master_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    "source_type": "Forensic Disk Image (.dd)",
+    "source_file_name": "dahua_nvr_dump.dd",
+    "source_master_sha256": "8c2a5f4b9d1e38a7c6e0f2b4d6a8c1e3f5b7d9a0c2e4f6a8b1d3f5a7c9e1b3d5",
+    "source_master_md5": "c4f8a1e2d3b5c7a9e0f1b3d5a7c9e1b3",
+    "pre_export_status": "VERIFIED_MATCH"
   },
   "extraction_parameters": {
     "channel_id": 2,
-    "start_sector": 1450204,
-    "end_sector": 1461900,
+    "source_start_byte_offset": 104857600,
+    "source_length_bytes": 14857600,
     "applied_time_offset_ms": 300000,
-    "calibration_method": "Manual OSD Sync"
+    "calibration_method": "OSD_VISUAL_ANCHOR",
+    "adapter_used": "DahuaDHAVAdapter v1.2.0",
+    "transcoding": "NONE_STREAM_COPY_ONLY"
   },
-  "output_evidence": {
-    "filename": "suspect_clip.mp4",
-    "output_sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+  "derived_artifact": {
+    "filename": "derived_clip_ch02.mp4",
+    "artifact_sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+    "artifact_md5": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
   }
 }
 ```
 
 ---
 
-## Appendix: Plain English Terminology
+## 5. Summary of Forensic Value
 
-If the technical flow above seems abstract, here is how you can explain **Hash Verification and the Audit Trail** to a non-technical judge, jury, or project manager:
-
-### The "Bloody Knife" (Physical Chain of Custody)
-Imagine a detective finds a bloody knife at a crime scene. They put it in an evidence bag and sign their name across the tape seal. They hand it to the crime lab, and the lab tech signs the seal. They bring it to court, and the judge looks at all the unbroken seals and signatures. Because the seals are unbroken, the court knows with 100% certainty that nobody swapped the knife for a fake one.
-
-### The "ATM Receipt" (Digital Chain of Custody)
-In our case, the "bloody knife" is the 1-Terabyte DVR hard drive seized from the shop. But in court, we aren't showing the jury all 1-Terabyte of data—we are showing them a 5-minute video clip. The defense lawyer will argue that we faked the video.
-
-To prove the 5-minute video is real, Locus prints a hyper-secure **Digital Receipt** (the Audit Sidecar) that travels everywhere with the video. 
-
-This receipt states:
-> *"I started with the original hard drive (and I verified its fingerprint). I went exactly to Sector X and copied the raw data. I did **not** change a single pixel. I put those bytes into a new file. The fingerprint for this new file is XYZ. Officer Smith authorized this extraction."*
-
-When the defense lawyer challenges the video, the investigator simply tells the court to run their own fingerprint (hash) on the video file. It will equal `XYZ`, proving mathematically that the video has not been tampered with since the exact moment Locus extracted it.
+1. **Transparent Lineage:** Every derived clip links mathematically to its source image byte range.
+2. **Defensible Verification:** Independent examiners can re-verify both the master image hash and the derived artifact hash using standard cryptographic CLI utilities (`sha256sum`).
+3. **Audit Trail Completeness:** Processing parameters, investigator identity, and adapter versions are recorded immutably.

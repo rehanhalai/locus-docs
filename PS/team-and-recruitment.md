@@ -1,41 +1,33 @@
-# Team Structure & Recruitment
+# Team Structure & Engineering Roles
 
 **Back to [[locus]]**
 
 ---
 
-## SIH Guidelines
+## 1. Hackathon Team Guidelines
 
 - **Team Size:** 6 student members
-- **Diversity:** Minimum 1 female team member
-- **Composition:** Majority programming/software skills
+- **Diversity Requirement:** Minimum 1 female team member (SIH mandatory compliance)
+- **Technical Competency:** Forensic storage research, systems programming, local AI execution, type-safe UI, technical documentation & validation QA.
 
 ---
 
-## Roles & Skills
+## 2. Engineering Roles & Responsibilities
 
-| # | Role | Focus Area | Core Stack / Skills |
+| Role # | Role Title | Core Focus Area | Primary Technical Stack |
 | :---: | :--- | :--- | :--- |
-| **1** | **Team Lead & Architect** *(Rehan)* | System architecture, DB schema, API design, deployment | NestJS/FastAPI, PostgreSQL, Docker, Redis |
-| **2** | **Full-Stack Developer** *(Priority Hire #1)* | Case management API, REST/WebSockets, SQLite integration | React, TypeScript, FastAPI, SQLite |
-| **3** | **Python Systems Dev** *(Priority Hire #2)* | Raw disk parsing, binary headers, sector carving, stream decode | Python, Binary I/O, PyAV, FFmpeg |
-| **4** | **AI / CV Developer** | Video analytics, object/face detection, motion heatmaps | Python, PyTorch, YOLOv8, OpenCV |
-| **5** | **Frontend UI Specialist** | Multi-camera video sync player, interactive timeline | React, TypeScript, Canvas/Video APIs |
-| **6** | **Docs & QA Specialist** | OEM comparative paper, SOPs, hash validation, SIH slides | Technical Writing, QA, SOPs, Research |
+| **1** | **Systems Architect & Team Lead** | Overall system architecture, security model, API contracts, database schema, SIH presentation strategy. | FastAPI, Python 3.11, SQLite 3, Monorepo Architecture |
+| **2** | **Forensic Adapter & Systems Dev** | Binary disk image parsing, OEM magic header scanning, Dahua/Hikvision parser logic, PyAV remuxing. | Python, Binary I/O, Struct, PyAV, FFmpeg bindings |
+| **3** | **Full-Stack Desktop Developer** | Case intake UI, native desktop file dialogs, REST/WebSocket API integration, SQLite transactional queries. | Electron, React 18, TypeScript, FastAPI, WebSockets |
+| **4** | **Secondary AI & Computer Vision Dev**| ONNX Runtime pipeline integration, YOLOv8 object/motion candidate triage, frame sampling, confidence indexing. | Python, ONNX Runtime, YOLOv8, OpenCV, NumPy |
+| **5** | **Frontend & UI/UX Specialist** | Multi-camera synchronized timeline matrix, hex sector viewer component, interactive video grid UI. | React, TypeScript, Vite, Tailwind CSS, HTML5 Canvas |
+| **6** | **Forensic QA, Docs & Validation Lead** | Ground-truth dataset testing, hash parity validation, SOP documentation, Forensic Evidence Report templates. | Technical Writing, QA Benchmarking, SOPs, PDF Templates |
 
 ---
 
-## Recruitment Pitch Script
+## 3. Recruitment & Project Alignment Pitch
 
-> **Building a Digital Forensics & AI Video Platform for SIH 2026!**  
-> We are assembling a 6-member team for **SIH Problem Statement 26150** — building a multi-vendor DVR/NVR forensic analysis tool for surveillance evidence recovery and AI analytics.  
+> **Project Alignment Summary:**  
+> **Locus** is a specialized desktop forensic platform for multi-vendor DVR/NVR surveillance disk image analysis, layout reconstruction, stream validation, timeline normalization, and artifact provenance.  
 >  
-> Systems work involved: raw disk image parsing, video stream carving, OpenCV/PyTorch computer vision, and a modern React investigation dashboard.  
->  
-> **Looking for:**  
-> 1. **Solid Full-Stack Dev** (React + Node.js/FastAPI + SQLite)  
-> 2. **Python / Systems Dev** (FFmpeg, OpenCV, binary parsing)  
-> 3. **AI / ML Dev** (YOLOv8, PyTorch, object/face detection)  
-> 4. **Frontend / UI Specialist** (React, timeline/video UI)  
->  
-> DM me if interested!
+> The project combines low-level binary disk parsing (Python / C-bindings), multi-camera timeline UI (React / TypeScript), and offline computer vision triage (ONNX Runtime / YOLOv8) within a local Electron desktop container.

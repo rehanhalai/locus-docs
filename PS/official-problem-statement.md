@@ -34,3 +34,9 @@ The expected outcome is a software-based forensic platform capable of performing
 - **Youtube Link:** (Not provided)
 - **Dataset Link:** (Not provided)
 - **Contact info:** (Not provided)
+
+---
+
+### Forensic Scope & Legal Admissibility Clarification
+> [!NOTE]
+> While the official problem statement identifies evidence admissibility and court outcomes as desired operational objectives, Locus itself does not issue legal guarantees of court admissibility. Legal admissibility remains solely within the purview of the judiciary based on legal standards, chain of custody, and expert testimony. Locus provides integrity, provenance tracking, deterministic processing history, and forensic reporting capabilities designed to support forensic examination and documentation.
