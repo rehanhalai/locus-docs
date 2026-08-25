@@ -1,50 +1,42 @@
-# 5. ONNX Runtime & AI Execution Pipeline
+# 5. ONNX Runtime & Secondary AI Triage Pipeline
 
 **Back to [[00-index]]**
 
 ---
 
-## 🤖 What is ONNX and Why Do We Need It?
+## 1. Local ONNX Runtime Architecture
 
-**ONNX** stands for **Open Neural Network Exchange** (developed by Microsoft, Meta, and Amazon).
+Locus uses **ONNX Runtime** (Open Neural Network Exchange) to execute lightweight computer vision models locally on investigator workstations without external cloud dependencies or heavy PyTorch installations.
 
-### The Problem without ONNX (The PyTorch Trap)
-If we use standard **PyTorch** to run our YOLOv8 object detection AI model:
-1. PyTorch requires installing heavy C++ CUDA libraries (`torch` & `torchvision`), which take up **5.5 GB to 8 GB of disk space**.
-2. Packaging PyTorch into our `Locus.exe` desktop installer turns it into a **massive 8 GB download**.
-3. PyTorch without a dedicated $2,000 NVIDIA GPU runs **very slowly on standard laptop CPUs**.
-
-### The Solution with ONNX
-1. **Model Export:** We convert our PyTorch YOLOv8 model (`.pt`) **once** into an optimized ONNX format (`.onnx`). The model size drops from 500 MB to just **12 MB – 45 MB**.
-2. **Tiny Runtime:** Instead of 5 GB PyTorch, we install `onnxruntime` (a lightweight 15 MB C++/Python library).
-3. **CPU Optimization:** ONNX Runtime uses hardware-level vector instructions (AVX2/AVX512 on Intel CPUs) to run inference **3x to 5x faster than PyTorch on standard laptop CPUs**.
+### Architectural Benefits
+1. **Lightweight Deployment:** Models exported to ONNX format (`yolov8n.onnx`) occupy 12 MB – 45 MB of storage.
+2. **Local CPU Optimization:** Uses C++ vector instructions (AVX2/AVX-512) for efficient CPU execution on standard laptops.
+3. **Execution Provider Flexibility:** Supports CPU Execution Provider, CUDA (NVIDIA GPU), and DirectML (AMD GPU) transparently.
 
 ---
 
-## 💻 System Requirements Breakdown (Why these numbers?)
+## 2. Resource Requirements & Execution Bounds
 
-| Component | Minimum (8GB RAM / Quad-Core) | Recommended (16GB+ RAM / 8-Core) | Why it matters |
+| Component | Minimum Requirements (Laptop) | Recommended Workstation | Technical Rationale |
 | :--- | :--- | :--- | :--- |
-| **CPU** | Quad-Core i5 / Ryzen 5 | 8-Core i7/i9 or Ryzen 7/9 | Python carving scans raw disk sectors in parallel threads. More cores = faster carving. |
-| **RAM** | 8 GB RAM | 16 GB – 32 GB RAM | Idle app uses ~600MB. Remaining RAM buffers raw disk dumps and video streams during extraction. |
-| **Storage** | SSD (Solid State Drive) | High-speed NVMe SSD | Spinning HDDs read at 80 MB/s. NVMe SSDs read at 3,500 MB/s (carving finishes in seconds). |
-| **GPU** | Integrated Graphics (CPU mode) | NVIDIA GPU (CUDA mode) | ONNX runs fast on CPU for small clips, but an NVIDIA GPU allows processing 200+ fps. |
+| **CPU** | Quad-Core (2.5 GHz+) | 8+ Core Workstation CPU | Handles background sector carving and frame sampling pools. |
+| **RAM** | 8 GB (4 GB free memory) | 16 GB – 32 GB RAM | Caps peak memory utilization under 2.5 GB. |
+| **Storage** | SSD Storage | High-Speed NVMe SSD | Fast sequential read throughput during hashing and parsing. |
+| **GPU** | Integrated Graphics (CPU Mode)| NVIDIA RTX 3060+ (CUDA) | Accelerates batch frame inference during secondary triage. |
 
 ---
 
-## 🎬 AI Model Running Scenarios in Locus
+## 3. Secondary AI Triage Execution Scenarios
 
-### Scenario A: Automated Frame Sampling (On Carving)
-- **Workflow:** When 10 minutes of video is carved, Locus extracts 1 frame per second (600 frames total).
-- **Execution:** ONNX Runtime processes the 600 frames in a fast batch (~10–15 seconds on CPU).
-- **Storage:** Detected objects (Person, Vehicle, Motion) are saved as JSON tags in the SQLite database.
+### Scenario A: Automated Frame Sampling
+- **Workflow:** Carved video clips are sampled at 1 frame per second.
+- **Execution:** ONNX Runtime processes sampled frames and outputs candidate bounding boxes and confidence scores.
+- **Storage:** Metadata indexed in SQLite (`ai_detections` table).
 
-### Scenario B: Instant Timeline Search (User Query)
-- **Workflow:** Investigator searches: *"Show all red vehicles between 2:00 PM and 3:00 PM"*.
-- **Execution:** Locus does **not** rerun the AI! It executes a 2-millisecond SQL query: `SELECT * FROM timeline_events WHERE object='vehicle' AND color='red'`.
-- **Result:** Timeline scrub bar instantly places highlight markers at the exact timestamps.
+### Scenario B: Parameterized Timeline Search
+- **Workflow:** Investigator queries filtered detection events (*"Show candidate person detections on Channel 2"*).
+- **Execution:** Fast parameterized SQL query retrieves indexed event records and populates timeline overlays.
 
-### Scenario C: Facial Recognition Matching
-- **Workflow:** Investigator uploads a suspect photo to match across all camera channels.
-- **Execution:** Lightweight FaceNet ONNX model compares feature embeddings of the suspect photo against saved face thumbnails in SQLite.
-- **Result:** Displays camera timeline matches ordered by similarity percentage (e.g., Camera 2 at 14:05:22 - 92% Match).
+### Scenario C: Human-in-the-Loop Verification
+- **Workflow:** Investigator inspects candidate detections in the React UI gallery.
+- **Execution:** Detections are manually flagged as `VERIFIED` or `REJECTED` by the operator.

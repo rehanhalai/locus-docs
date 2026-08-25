@@ -1,38 +1,43 @@
-# Open-Source Tools & Integration Architecture for Locus MVP
+# Open-Source Tools & Integration Architecture for Locus
 
-*These notes document open-source tools and libraries that Locus can leverage under the hood for a rapid, robust MVP.*
-
----
-
-## 1. Disk Acquisition & Imaging (Step 2)
-Instead of writing a complex C-level disk imager from scratch, Locus can wrap battle-tested open-source forensic utilities:
-
-- **`dc3dd` / `dcfldd` (DoD Forensics):**
-  - C-based enhanced `dd` utilities designed specifically for law enforcement.
-  - Built-in on-the-fly SHA-256 / MD5 hashing during copy.
-  - Automatic bad-sector recovery with forensic zero-padding.
-  - Standardized progress meters (`stderr`/`stdout`) that Locus can stream to display a live progress bar in the UI.
-- **Pure Python Alternative (`hashlib` + block reads):**
-  - A lightweight, cross-platform ~50 line Python loop reading 1MB blocks from the disk handle and updating `hashlib.sha256()` while writing to disk.
+**Back to [[MVP/MVP|MVP]]**
 
 ---
 
-## 2. Proprietary Filesystem & Header Parsing (Steps 4 & 5)
-Surveillance vendors use specific layouts, but open-source references exist:
+## 1. Disk Ingestion & Hashing (MVP vs Future Acquisition)
 
-- **`hikextractor` (Python):** Open-source reference parser for Hikvision DVR raw disk images, showing how to traverse Hikvision partition boundaries and sector headers.
-- **`libHikvision` / `ezhikstract` (Python):** Reference implementations for parsing Hikvision/EZVIZ round-robin index files (`index00.bin`) and video data directories.
-- **`dhav2mp4` / `dhav-extract`:** Open-source tools demonstrating how 32-byte Dahua `DHAV` headers wrap raw H.264 NAL units.
+- **MVP Ingestion (Primary Scope):**
+  - Uses Python `hashlib` with 64 KB block streaming readers (`open(filepath, 'rb')`).
+  - Computes concurrent `SHA-256` and `MD5` cryptographic digests during ingestion without requiring secondary read passes.
+- **Future Physical Imager Integration (Phase 3 Roadmap):**
+  - **`dc3dd` / `dcfldd` (DoD Forensics):** Evaluated for future live physical drive acquisition modules when hardware write-blockers are connected directly to the workstation. Provides on-the-fly bad-sector zero-padding and live subprocess progress streaming.
 
 ---
 
-## 3. Video Remuxing & Frame Assembly (Step 6)
+## 2. Proprietary Filesystem & Header Parsing Research References
+
+Surveillance vendors utilize proprietary storage layouts. Open-source forensic research projects provide foundational reference patterns:
+
+- **`hikextractor` (Python):** Open-source reference parser for Hikvision DVR raw disk images, demonstrating partition boundary traversal and sector header unpacking.
+- **`libHikvision` / `ezhikstract` (Python):** Reference implementations for parsing Hikvision/EZVIZ round-robin index files (`index00.bin`) and video cluster directories.
+- **`dhav2mp4` / `dhav-extract`:** Open-source tools demonstrating how Dahua `DHAV` container headers wrap raw H.264 NAL units.
+
+> [!NOTE]
+> Open-source tools serve as reverse-engineering reference material. Locus implements a modular adapter architecture (`DahuaDHAVAdapter`, `HikvisionHKFSAdapter`, `CPPlusAdapter`) with explicit validation tracking and fallback hierarchies.
+
+---
+
+## 3. Video Remuxing & Frame Assembly (Feature 04)
+
 - **`FFmpeg` / `PyAV` (Python bindings for FFmpeg C libraries):**
-  - Industry-standard tool to take extracted raw H.264/H.265 Elementary Streams (`.h264`) and repackage them into `.mp4` containers.
-  - Remuxes in milliseconds without re-encoding (preserving exact bit integrity).
+  - Wraps extracted raw H.264/H.265 Elementary Streams (`.h264`, `.h265`) into `.mp4` container wrappers.
+  - Operates strictly in **stream copy mode (`-c:v copy`)** without transcoding (preserving original compressed bitstream payloads).
+  - *Forensic Boundary:* PyAV/FFmpeg is **not** used to parse proprietary DVR storage structures or disk images; it is invoked solely on byte streams already extracted by Locus forensic parsers.
 
 ---
 
-## 4. Video Analytics & Motion Detection (Step 8)
-- **`DVR-Scan` (Python):** Open-source command-line tool specifically designed to analyze security footage and detect motion events, extracting only relevant activity.
-- **`Ultralytics YOLOv8` (Python):** Lightweight open-source model for local AI object detection (Persons, Vehicles, License Plates).
+## 4. Video Analytics & Motion Detection (Feature 06)
+
+- **`Ultralytics YOLOv8` via `ONNX Runtime`:** Local CPU/GPU inference engine for secondary object candidate tagging (`person`, `vehicle`).
+- **OpenCV (`MOG2` / `HSV`):** Motion detection and dominant color estimation for analytical triage.
+- *Forensic Boundary:* AI models perform secondary analytical triage and do not alter source bytes or establish legal identity.

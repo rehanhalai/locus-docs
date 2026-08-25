@@ -1,10 +1,21 @@
-1. **Step 1: Physical Device Seizure & Connection** (Handling the physical DVR/HDD, hardware write-blockers).
-2. **Step 2: Forensic Imaging & Acquisition** (Creating the bit-stream copy, e.g., `.dd` or `.E01`).
-3. **Step 3: Software Ingestion & Baseline Hashing** (Loading the image into Locus and securing the cryptographic baseline).
-4. **Step 4: Device & Filesystem Identification** (Detecting the DVR OEM and proprietary structure).
-5. **Step 5: Header Parsing & Sector Mapping** (Locating and decoding video frame metadata).
-6. **Step 6: Video Carving, Assembly & Remuxing** (Extracting raw frames and wrapping them into playable containers).
-7. **Step 7: Timeline Normalization & Sync** (Aligning timestamps across multiple camera channels).
-8. **Step 8: AI-Assisted Analytics** (Running local object detection).
-9. **Step 9: Hash Verification & Chain of Custody Audit** (Ensuring evidence integrity prior to export).
-10. **Step 10: Forensic Report Generation** (Producing the court-admissible PDF).
+# Forensic Investigation Workflow Roadmap
+
+**Back to [[MVP/MVP|MVP]]**
+
+---
+
+### Phase A: Upstream Pre-Ingestion Workflow (Hardware / External Imager)
+1. **Step 1: Physical Device Seizure & Hardware Write-Blocking** (Handling physical DVR/HDD with dedicated hardware write-blocker; upstream process).
+2. **Step 2: Upstream Forensic Imaging** (Generating bit-stream disk image, e.g., `.dd`, `.raw`, `.img`).
+
+---
+
+### Phase B: Locus MVP Forensic Analysis & Processing Engine
+3. **Step 3: Forensic Image Ingestion & Baseline Hashing** (Loading `.dd` image in read-only mode, computing baseline SHA-256/MD5).
+4. **Step 4: Device & Filesystem Layout Identification** (Multi-tier signature and partition table inspection).
+5. **Step 5: Sector-Level Metadata & Header Parsing** (Decoding frame headers, populating SQLite Master Sector Map).
+6. **Step 6: Video Stream Carving, Assembly & Remuxing** (Extracting raw bitstreams, GOP keyframe alignment, zero-transcoding remuxing into derived MP4 artifacts).
+7. **Step 7: Timeline Preservation & Master UTC Normalization** (Preserving raw timestamps, applying non-destructive clock drift and timezone calibration).
+8. **Step 8: Local Secondary AI Analytics (ONNX Triage)** (Local YOLOv8 candidate object detection with Human-in-the-Loop verification).
+9. **Step 9: Cryptographic Hash Parity & Provenance Sidecar Export** (Re-verifying source image hashes, hashing derived artifacts, exporting `.sync.json`).
+10. **Step 10: Forensic Evidence Report Generation** (Compiling audit trails, hash tables, and provenance chains into HTML/PDF evidence reports).

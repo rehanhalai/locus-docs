@@ -1,6 +1,6 @@
-# Deep-Dive Guide: GOP, Frame Types (I/P/B), SPS/PPS, and Zero-Transcoding Remuxing
+# Deep-Dive Guide: GOP, Frame Types (I/P/B), SPS/PPS, and Stream-Preserving Remuxing
 
-*This document provides an intuitive, plain-language explanation of video compression mechanics, NAL units, GOP alignment, and how zero-transcoding remuxing works in Locus.*
+**Back to [[MVP/MVP|MVP]]**
 
 ---
 
@@ -11,86 +11,77 @@ If a surveillance camera recorded 1080p video as uncompressed full images at 30 
 - 1 Second of video = **180 Megabytes**
 - 1 Hour of video = **648 Gigabytes**
 
-A 1TB hard drive would fill up in less than 2 hours for just 1 camera!
+A 1TB hard drive would fill up in less than 2 hours for just 1 camera.
 
-To solve this, video codecs like **H.264 (AVC)** and **H.265 (HEVC)** do not save full photos 30 times a second. They save one full photo occasionally, and then only record the **tiny motion differences (deltas)** between frames.
+To solve this, video codecs like **H.264 (AVC)** and **H.265 (HEVC)** do not save full photos 30 times a second. They save one full photo periodically (Keyframe), and then only record the **motion differences (deltas)** between frames.
 
 ---
 
 ## 2. The Types of Video Frames: I-Frames vs. P-Frames
 
-Surveillance video is made of two main types of frames:
+Surveillance video streams are predominantly composed of two frame types:
 
 ### A. I-Frame (Intra-Frame / Keyframe)
-- **What it is:** A complete, full-resolution image (like a standalone JPEG photo).
-- **Independence:** It does NOT depend on any other frame. If you open an I-Frame by itself, you see the entire scene clearly.
+- **What it is:** A complete, standalone image (analogous to a JPEG image).
+- **Independence:** It does NOT depend on prior or future frames to render.
 - **Size:** Large (e.g., 50 KB to 100 KB).
 
 ### B. P-Frame (Predicted Frame / Delta Frame)
-- **What it is:** Only stores what **moved or changed** since the last frame (e.g., *"the background didn't move; the car moved 4 pixels to the left"*).
-- **Dependence:** It **CANNOT** be displayed on its own. It requires the previous I-Frame to render properly.
-- **The Catch:** If you try to play a video starting on a P-Frame, your media player has no background image to work with, resulting in **corrupted green/grey pixel smear**.
-- **Size:** Tiny (e.g., 2 KB to 5 KB).
+- **What it is:** Encodes only what changed relative to the previous reference frame.
+- **Dependence:** It **cannot** be rendered on its own. It requires the preceding reference frame.
+- **Artifact Consequence:** If playback commences on a P-Frame without an antecedent reference frame, media players produce decoding artifacts (macroblocking, green/grey pixel smear).
+- **Size:** Compact (e.g., 2 KB to 5 KB).
 
-*(Note: B-Frames predict motion both forwards and backwards, but are rarely used in CCTV DVRs to avoid processing delay).*
-
----
-
-## 3. What is an IDR Keyframe?
-
-- In H.264, a standard I-Frame might still allow future frames to reference frames *before* it.
-- An **IDR (Instantaneous Decoder Refresh) Frame** is a special, strict Keyframe that tells the video player:
-  > *"Clear all memory of past frames. Nothing after this point will ever look back at anything before this point."*
-- **Forensic Rule:** Every carved video clip **must start on an IDR Frame** so it can play independently without needing older disk sectors.
+*(Note: B-Frames predict motion bi-directionally, but are rarely used in real-time CCTV DVRs to minimize hardware latency).*
 
 ---
 
-## 4. What are SPS and PPS? (The "Blueprint" & "Recipe")
+## 3. IDR Keyframes and Parameter Sets
 
-Before a video player can draw an IDR frame on screen, it needs two tiny metadata packets called **Parameter Sets**:
+### What is an IDR Keyframe?
+- In H.264/H.265, an **IDR (Instantaneous Decoder Refresh) Frame** is a strict keyframe boundary signaling the decoder to flush all previous reference frame buffers.
+- **Forensic Alignment Principle:** Locus attempts to align a recovered clip to an available valid IDR/keyframe when sufficient source data exists. If no suitable keyframe is available, the recovered artifact may be classified as `PARTIAL`, `FRAGMENTED`, or `CORRUPTED` according to validation results.
 
-1. **SPS (Sequence Parameter Set - NAL `0x67`):**
-   - The **Blueprint**: Tells the player the video resolution (e.g., `1920x1080`), aspect ratio (`16:9`), and framerate (`25 FPS`).
-   - Without SPS, the media player doesn't even know how large the window should be!
-2. **PPS (Picture Parameter Set - NAL `0x68`):**
-   - The **Recipe**: Tells the player the exact mathematical decompression algorithms to use.
+### What are SPS and PPS?
+Before a decoder renders an IDR frame, it requires stream parameter headers:
+1. **SPS (Sequence Parameter Set - NAL `0x67` / `0x27`):** Defines video resolution (e.g., `1920x1080`), aspect ratio, profile, and framerate.
+2. **PPS (Picture Parameter Set - NAL `0x68` / `0x28`):** Defines entropy coding modes and slice group parameters.
 
 ---
 
-## 5. What is a GOP (Group of Pictures)?
+## 4. What is a GOP (Group of Pictures)?
 
-A **GOP** is a complete, self-contained cluster of video frames that begins with an **IDR Keyframe** and is followed by a sequence of **P-Frames**:
+A **GOP** is a self-contained sequence of frames beginning with an **IDR Keyframe** (with SPS/PPS) followed by predicted **P-Frames**:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        ONE COMPLETE GOP (1–2 Seconds)                  │
 ├──────────────┬──────────────┬──────────────┬───────────┬───────────────┤
 │     SPS      │     PPS      │ IDR Keyframe │  P-Frame  │    P-Frame    │
-│ (Resolution) │ (Decompress) │ (Full Photo) │ (Delta 1) │   (Delta 2)   │
+│ (Resolution) │ (Parameters) │ (Full Photo) │ (Delta 1) │   (Delta 2)   │
 └──────────────┴──────────────┴──────────────┴───────────┴───────────────┘
 ```
 
-In CCTV systems, a new GOP starts every 1 to 2 seconds (every 25 to 50 frames).
-
-### Why the "GOP Alignment Stage" in Locus is Mandatory:
-If an investigator asks for video from `14:02:05` to `14:05:00`:
-- If `14:02:05` happens to land on a P-Frame in the middle of a GOP, Locus does not start carving there.
-- Locus **snaps back to the nearest preceding IDR Keyframe** (e.g., at `14:02:04`).
-- This guarantees that frame #1 of the resulting MP4 has the SPS/PPS headers and full IDR photo, producing a crystal-clear, artifact-free video.
+### The GOP Alignment Objective:
+If an investigator requests extraction for time range `14:02:05` to `14:05:00`:
+- If `14:02:05` lands on a P-Frame mid-GOP, Locus attempts to **snap backward to the nearest preceding valid IDR Keyframe** (e.g., at `14:02:04`).
+- This ensures that frame #1 of the extracted stream contains the required SPS/PPS headers and reference intra-frame, enabling clean decoding when source sectors are intact.
 
 ---
 
-## 6. What is "Zero-Transcoding Remuxing"? (The Envelope Analogy)
+## 5. Stream-Preserving Remuxing (The Container Analogy)
 
-### The Wrong Way: Transcoding / Re-encoding (Slow & Lossy)
-- Decompresses the video into raw pixels in RAM, and then uses a CPU/GPU video encoder to compress it again into an MP4 file.
-- **Flaws:** Takes minutes per clip, pegs CPU at 100%, and alters/degrades the original camera pixel evidence.
+### Transcoding / Re-encoding (Lossy & Resource-Heavy)
+- Decompresses video into raw pixel arrays in memory, then invokes a secondary encoder to re-compress into MP4.
+- **Forensic Flaw:** Modifies original pixel data, incurs generational compression loss, alters bitstream hashes, and consumes heavy CPU/GPU resources.
 
-### The Locus Way: Remuxing / Stream Copy (Instant & 100% Lossless)
+### Locus Method: Stream-Preserving Remuxing (Stream Copy)
 Think of the video data as a **letter** and the file format as an **envelope**:
-- Inside the CCTV hard drive, the video frames are already compressed in H.264 (the letter). They are just sitting inside a proprietary Dahua/Hikvision "shipping envelope".
-- **Remuxing (`-c:v copy` in PyAV/FFmpeg):**
-  1. We take the exact unchanged H.264 byte stream out of the proprietary envelope.
-  2. We place those exact same bytes into a standard `.mp4` envelope (writing the 1 KB MP4 container header).
-- **Speed:** Takes **0.1 seconds** (200ms) for a 10-minute clip!
-- **Forensic Integrity:** Not a single pixel is altered. The cryptographic hash of the video payload remains 100% identical to the source disk.
+- On the DVR storage image, compressed H.264/H.265 frames (the letter) reside within proprietary vendor sector wrappers.
+- **Stream Copy (`-c:v copy` in PyAV/FFmpeg):**
+  1. The forensic parser extracts the unmodified compressed NAL byte stream.
+  2. PyAV/FFmpeg places those exact compressed bytes into a standard `.mp4` container wrapper (constructing moov/mdat container atoms).
+- **Forensic Distinction:**
+  - When stream-copy remuxing is possible, the recovered compressed elementary-stream payload is preserved without re-encoding.
+  - The resulting `.mp4` remains a **derived artifact** with its own distinct cryptographic hash (`artifact_sha256`), independently recorded and linked to the source evidence (`source_master_sha256`) via provenance records.
+- **Performance:** Remuxing performance is hardware-, codec-, container-, and stream-dependent and will be measured during validation benchmarking. *(Target benchmark: to be measured).*

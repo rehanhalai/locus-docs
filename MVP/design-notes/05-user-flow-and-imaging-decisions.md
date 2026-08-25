@@ -1,49 +1,45 @@
 # Discussion Log: User Flow, Bit-Stream Imaging, and Open-Source Strategy
 
-*This note captures the core architectural rationale and answers key questions raised regarding user experience, bit-stream imaging, and development approach.*
+**Back to [[MVP/MVP|MVP]]**
 
 ---
 
-## 1. What Happens When a User Plugs in a DVR Hard Drive? (User POV)
+## 1. Physical Device Connection vs Image Ingestion
 
-- **Physical Connection:** The investigator pulls the drive from the DVR, attaches it to a **Hardware Write-Blocker** (via SATA), and connects the write-blocker to the PC via USB.
+- **Physical Connection (Upstream Process):** The investigator extracts the storage drive from the seized DVR/NVR, attaches it to a **Hardware Write-Blocker** (via SATA/SAS), and connects the write-blocker to the workstation.
 - **Operating System Reaction:**
-  - The OS (Windows/Linux) detects the raw disk (e.g., `PhysicalDrive1` or `/dev/sdb`), but **cannot assign a drive letter** (like `E:\`) because the filesystem is proprietary (DHAV, HKFS, etc.).
-  - Windows will often trigger a dangerous pop-up: *"You must format the disk before using it"*. (User must cancel).
-  - The investigator cannot browse or double-click video files in Windows Explorer.
+  - Standard host operating systems (Windows/macOS) detect the physical drive block device, but **cannot assign a native volume** because the filesystem is proprietary (DHFS, HKFS, etc.).
+  - Windows may prompt: *"You must format the disk before using it"*. (The investigator must cancel this dialog).
+  - The investigator uses standard forensic imaging tools (e.g., `dd`, `dc3dd`, FTK Imager) with hardware write-blocking to create a bit-stream disk image (`.dd`, `.raw`, `.img`).
 
 ---
 
-## 2. Why Do We Need the Bit-Stream Backup (`.dd` / `.raw`)?
+## 2. Role of Bit-Stream Images (`.dd` / `.raw`)
 
-- **Evidence Preservation:** Forensic standards dictate that analysis should never be run directly on original physical media if it can be avoided. A bit-stream image is a 100% exact byte-for-byte replica of the entire drive (including deleted space, slack space, and corrupted sectors).
-- **Drive Health & Longevity:** CCTV hard drives from crime scenes are often heavily worn from running 24/7. Performing repetitive carving scans directly on the physical drive can cause the drive head to permanently fail. Imaging creates one master digital copy on a fast NVMe SSD, allowing rapid, repeatable parsing without risking hardware failure.
-
----
-
-## 3. Decision: Why Build Bit-Stream Acquisition Directly Into Locus?
-
-- **User Convenience:** Rather than forcing the investigator to use 3rd-party tools (like FTK Imager or Guymager) to image the drive first and then open Locus, Locus will provide an **All-in-One Workflow**:
-  ```
-  Connect Drive ──► Select Drive in Locus ──► Auto Bit-Stream Clone (.dd) + Hash ──► Auto Parse & Carve
-  ```
-- **Alignment with Problem Statement:** SIH PS 26150 explicitly requires *"Standardized **Acquisition**, Recovery, and Analysis"*. Integrating the acquisition module fulfills the acquisition mandate directly.
-- **Flexibility:** Locus also retains the option to open an already-existing `.dd` / `.raw` / `.E01` file if the user already has one.
+- **Evidence Preservation:** Forensic standards require that primary analysis operate on exact forensic representations rather than working directly on physical evidence media whenever possible. A bit-stream image preserves the entire storage space, including unallocated sectors, slack space, and corrupted blocks.
+- **Hardware Protection:** Surveillance hard drives from active installations often experience heavy mechanical wear from 24/7 write operations. Repetitive sector-by-sector carving directly on degrading physical media risks drive head failure. Analysis on an image file eliminates physical drive stress.
 
 ---
 
-## 4. Engineering Philosophy: Do We Need to Build Everything from Scratch?
+## 3. Scope Decision: MVP Image Ingestion vs Future Live Acquisition
 
-**No. We do NOT need to reinvent the wheel.**
+- **Locus MVP Scope Boundary:** The Locus MVP strictly ingests **pre-acquired forensic disk images** (`.dd`, `.raw`, `.img`).
+- **Physical Drive Acquisition:** Upstream physical drive acquisition (connecting raw drives through write-blockers to create image files) is categorized as a **Phase 3 Roadmap Feature**.
+- **Hardware Write-Blocking vs Software Read-Only Mode:**
+  > [!IMPORTANT]
+  > Opening a pre-acquired `.dd` file read-only in software prevents application-level write modifications to that image. It is **not** equivalent to a hardware write-blocker used during physical drive seizure and imaging. Physical write-blocking is an essential upstream hardware requirement.
 
-In real-world engineering, robust forensic software orchestrates proven, battle-tested open-source components:
-- **Disk Imaging Engine:** Wrapped `dc3dd` / `dcfldd` (handles bad-sector zero-padding, error resilience, on-the-fly hashing).
-- **Video Remuxing Engine:** `FFmpeg` / `PyAV` (packages raw H.264 elementary streams into `.mp4` containers in milliseconds without re-encoding).
-- **AI Analytics Engine:** `DVR-Scan` & `Ultralytics YOLOv8` (motion detection and object identification).
-- **Database Engine:** `SQLite` (high-speed indexing of sector headers and camera channels).
+---
 
-### What IS Our Custom Core Value?
-Our custom code focuses on what open-source tools currently lack:
-1. **Multi-Vendor Proprietary Filesystem Parser:** The unified engine that detects Dahua, Hikvision, CP PLUS, and generic DVR sector layouts.
-2. **De-interleaving & Carving Logic:** The algorithm that reassembles fragmented, multi-camera interleaved sectors across the ring buffer into continuous video streams.
-3. **Unified Forensic UI/UX:** The desktop application providing timeline sync, multi-camera playback, and PDF case reporting.
+## 4. Engineering Architecture: Open-Source Integrations
+
+In digital forensics engineering, robust platforms coordinate proven components:
+- **Image Ingestion & Hashing:** Python `hashlib` with 64 KB block streaming reader (dual SHA-256 and MD5 calculation).
+- **Video Remuxing Engine:** `FFmpeg` / `PyAV` (packages raw H.264/H.265 elementary streams into standard `.mp4` containers in stream-copy mode without transcoding).
+- **Secondary AI Analytics Engine:** Local `ONNX Runtime` executing `YOLOv8` models for candidate object and motion detection triage.
+- **Transactional Database:** `SQLite` (high-speed transactional indexing of Master Sector Maps, camera channels, and provenance records).
+
+### Core Custom Forensic Value in Locus:
+1. **Multi-Vendor Proprietary Filesystem & Layout Adapters:** The modular parser framework detecting Dahua, Hikvision, CP Plus, and generic DVR storage structures.
+2. **De-Interleaving & Metadata-Guided Carving:** Reassembling fragmented, interleaved multi-camera sector streams across circular recording buffers into continuous video streams.
+3. **Forensic Integrity & UTC Normalization:** Managing raw timestamp preservation, non-destructive UTC calibration, and cryptographic provenance sidecars.

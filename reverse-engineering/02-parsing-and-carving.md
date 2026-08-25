@@ -21,4 +21,4 @@ When a criminal deletes a video on a DVR, the DVR usually just deletes the "Inde
 
 Our software will scan every single sector of the 500 GB drive. Whenever it spots the secret starting code (`DHAV` or `H264`), it says, *"Aha! A video starts here!"* It then copies the data from that sector onwards until the video chunk ends. 
 
-**This is how you recover deleted CCTV footage.** You "carve" it out of the raw empty space without needing a Table of Contents.
+**This is how forensic tools attempt to recover deleted CCTV footage.** The software "carves" video fragments out of the raw unallocated space without needing a Table of Contents. Recovery success depends on whether the underlying disk sectors have been physically overwritten by the DVR's circular buffer; overwritten sectors are irrecoverable.

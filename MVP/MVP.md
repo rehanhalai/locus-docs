@@ -4,103 +4,105 @@
 
 ---
 
-## MVP Overview
+## 1. MVP Overview
 
-The **Locus MVP** is structured into **8 core backend feature specifications** (+ 1 deferred reporting module), mapping directly to the official PS 26150 requirements. Each feature contains the explanation and technical architecture of the MVP.
+The **Locus MVP** is structured into **8 core backend feature specifications** (+ 1 forensic evidence reporting module), mapping directly to the official PS 26150 requirements. Each module is designed around the central principle: **Locus prioritizes forensic correctness over successful-looking output.**
 
 ---
 
-### How the features are structured to collaborate with each other
+## 2. End-to-End Forensic Data Pipeline
 
-```text
-[1. Physical Acquisition & Ingestion] ──► [2. Device Identification] ──► [3. Sector Header Parsing]
-                                                                                   │
-                                                                                   ▼
-[6. AI Analytics & Indexing] ◄──────── [5. Timeline Synchronization] ◄── [4. Sector Video Carving]
+```
+[1. Forensic Image Ingestion] ──► [2. Device Layout Identification] ──► [3. Storage & Header Analysis]
+                                                                                  │
+                                                                                  ▼
+[6. Secondary AI Triage] ◄─────── [5. Timeline Normalization] ◄─── [4. Stream Carving & Remuxing]
            │
            ▼
-[7. Evidence Search & Querying] ──────► [8. Hash Verification & Export] ──► [9. Court PDF Report*]
+[7. Search & Filter Querying] ──► [8. Cryptographic Hash Parity] ──► [9. Forensic Evidence Report]
 ```
 
 ---
 
-#### 1. Physical Acquisition & Case Ingestion
-- **What happens:** The investigator either acquires a live raw hard drive via hardware write-blocker using the embedded `dc3dd` engine (with bad sector zero-padding) or loads a pre-existing forensic image (`.dd`/`.raw`). Locus locks the image in **strict Read-Only mode** and generates baseline `SHA-256` and `MD5` cryptographic hashes.
+### Key Workflow Responsibilities
 
-#### 2. Device & File System Identification
-- **What happens:** Locus scans the raw sector headers looking for manufacturer "magic signatures" (e.g., `DHAV` for Dahua/CP Plus, `HKFS` for Hikvision). Within 1 second, it detects the DVR model, partition layout, sector size, and camera channel count.
+#### 1. Pre-Acquired Image Ingestion & Baseline Hashing
+- **What happens:** The investigator loads a pre-acquired forensic disk image (`.dd`, `.raw`, `.img`). Locus opens file handles in strict **Read-Only mode** (`rb` mode) and streams 64 KB chunks to compute baseline `SHA-256` and `MD5` cryptographic hashes.
+- *Note:* Software read-only handling prevents application-level write operations; physical hardware write-blocking remains a separate upstream acquisition process.
 
-#### 3. Sector Header Parsing & Mapping
-- **What happens:** Locus scans disk sectors, unpacks proprietary 32-byte binary headers using Python `struct.unpack()`, and builds a **Master Sector Map** in SQLite (`stream_headers` table) that maps out where every camera channel's frames begin and end.
+#### 2. Device & File System Layout Identification
+- **What happens:** Locus scans sector header boundaries looking for candidate signature bytes (e.g., `DHAV` for Dahua profiles, `HKFS` for Hikvision profiles). It estimates candidate vendor identification, partition layout, and confidence level (`KNOWN`, `LIKELY`, `UNKNOWN`, `UNSUPPORTED`, `AMBIGUOUS`). (Note: Dedicated CP Plus adapter validation is scheduled for Phase 2 — not in MVP).
 
-#### 4. Sector Video Carving & Stream Remuxing
-- **What happens:** The background Python worker reads raw sectors according to the Master Sector Map, strips proprietary wrapper headers, snaps to the nearest I-Frame (GOP alignment), and remuxes raw H.264/H.265 frames into web-playable `.mp4` clips via PyAV/FFmpeg using **zero-transcoding stream copy**.
+#### 3. Storage & Header Analysis
+- **What happens:** Locus unpacks vendor-specific binary sector headers (such as validated Dahua DHAV frame wrappers or Hikvision block headers) using verified format definitions. It constructs a **Master Sector Map** in SQLite mapping frame boundaries and channel IDs.
 
-#### 5. Multi-Camera Master Timeline Sync
-- **What happens:** Locus normalizes timestamp drifts across different camera channels using non-destructive virtual calibration layers (`timeline_calibrations`). A 60 Hz master clock coordinates multi-camera grid playback without modifying source evidence.
+#### 4. Video Stream Carving & Remuxing
+- **What happens:** The background Python worker reads raw disk sectors according to the Master Sector Map. If filesystem indexes are missing, it executes metadata-guided sector carving. Valid H.264/H.265 frames are remuxed into web-playable `.mp4` clips via PyAV/FFmpeg using zero-transcoding stream copying. Stream recovery status is explicitly recorded (`RECOVERED`, `PARTIAL`, `FRAGMENTED`, `CORRUPTED`, `UNRECOVERABLE`).
 
-#### 6. Local AI Video Analytics (ONNX Engine)
-- **What happens:** As clips are carved, Locus uses OpenCV MOG2 to detect motion voids (skipping dead time), then runs lightweight YOLOv8 models locally via ONNX Runtime to detect persons and vehicles, indexing event timestamps into SQLite.
+#### 5. Multi-Camera Master Timeline Synchronization
+- **What happens:** Locus preserves original in-stream timestamps while calculating timezone interpretations and clock drift offsets. A normalized master UTC timeline synchronizes multi-camera grid playback without mutating source evidence.
+
+#### 6. Local Secondary AI Video Analytics (ONNX Engine)
+- **What happens:** As video clips are validated, Locus samples frames at configurable intervals (e.g., 1 fps) and runs lightweight YOLOv8 models locally via ONNX Runtime to detect object (`person`, `vehicle`) and motion candidate tags. Detection bounding boxes and confidence scores are indexed in SQLite with mandatory Human-in-the-Loop review flags (`Verified`, `Rejected`, `Unreviewed`).
 
 #### 7. Evidence Search & Event Filtering
-- **What happens:** The investigator executes fast parameterized queries (camera + time range + object type + confidence). Locus queries the indexed SQLite database in under 2 milliseconds and populates a clickable thumbnail gallery and timeline heatmap markers.
+- **What happens:** The investigator executes queries (channel + timestamp range + object class + verification status). Locus retrieves indexed SQLite records to populate an interactive thumbnail gallery and timeline overlays.
 
 #### 8. Cryptographic Hash Verification & Integrity Export
-- **What happens:** Upon export, Locus re-verifies the source image hash, slices the carved video using zero-transcoding copy, calculates the output SHA-256/MD5 hashes, and generates a cryptographic audit sidecar (`.sync.json`) proving an unbroken chain of custody.
+- **What happens:** Upon exporting derived clips, Locus re-verifies source image baseline hashes, calculates output artifact `SHA-256`/`MD5` hashes, and generates a cryptographic provenance record (`.sync.json`) detailing source image ID, byte offset, sector length, and parser version.
 
-#### 9. Court-Ready Forensic PDF Report Export *(Future / UI Reporting Module)*
-- **What happens:** Compiles case metadata, baseline disk hashes, carved clip tables, AI detection summaries, and investigator audit logs into a legally formatted PDF report.
-- **Specification Status:** *Note: This feature is deferred from the current low-level backend technical specifications due to its straightforward UI/template nature (HTML/PDF rendering), but remains an integral component of the product roadmap.*
+#### 9. Forensic Evidence Report Export
+- **What happens:** Compiles case metadata, baseline hashes, carved media hash parity tables, full artifact provenance traces, human-reviewed AI findings, and uncertainty disclaimers into a structured HTML/PDF Forensic Evidence Report.
 
 ---
 
-## Feature Modules Index
+## 3. Feature Modules Index
 
-Each feature below has its own dedicated folder inside `MVP/features/` with a comprehensive specification document. Reading these documents in order gives a complete understanding of the entire Locus backend architecture.
+Each feature document inside `MVP/features/` defines low-level technical specifications:
 
-| # | Feature Folder | Document | Summary | Status |
+| # | Feature Folder | Document Link | Core Technical Focus | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| 01 | [[disk-imaging]] | [disk-imaging.md](./features/disk-imaging/disk-imaging.md) | Live physical drive acquisition via embedded `dc3dd`, bad sector defense, and dual SHA-256/MD5 baseline hashing | **Complete** |
-| 02 | [[device-identification]] | [device-identification.md](./features/device-identification/device-identification.md) | Automatic OEM & magic byte signature detection (Dahua, Hikvision, CP Plus, etc.) | **Complete** |
-| 03 | [[filesystem-parsing]] | [filesystem-parsing.md](./features/filesystem-parsing/filesystem-parsing.md) | Binary header decoding, sector mapping, and building the Master Sector Map in SQLite | **Complete** |
-| 04 | [[video-carving]] | [video-carving.md](./features/video-carving/video-carving.md) | Sector-level carving of raw H.264/H.265 frames with GOP alignment and zero-transcoding remuxing | **Complete** |
-| 05 | [[timeline-sync]] | [timeline-sync.md](./features/timeline-sync/timeline-sync.md) | Multi-camera timestamp normalization, non-destructive calibration layer, and 60 Hz master clock | **Complete** |
-| 06 | [[ai-analytics]] | [ai-analytics.md](./features/ai-analytics/ai-analytics.md) | Local YOLOv8 object detection (persons, vehicles) & motion void indexing via ONNX Runtime | **Complete** |
-| 07 | [[evidence-search]] | [evidence-search.md](./features/evidence-search/evidence-search.md) | SQLite query layer for filtering, searching, and browsing AI detection events | **Complete** |
-| 08 | [[evidence-hashing]] | [evidence-hashing.md](./features/evidence-hashing/evidence-hashing.md) | Cryptographic hash verification, zero-transcoding export, and audit trail sidecar generation | **Complete** |
-| 09 | `forensic-reporting` | *Deferred* | Automated court-ready PDF forensic report export with hash parity tables | *Future / Low Complexity* |
+| 01 | `disk-imaging` | [disk-imaging.md](./features/disk-imaging/disk-imaging.md) | Pre-acquired forensic image ingestion (`.dd`, `.raw`), software read-only handles, dual SHA-256/MD5 baseline hashing | **Updated** |
+| 02 | `device-identification` | [device-identification.md](./features/device-identification/device-identification.md) | Signature scanner, vendor confidence scoring (`KNOWN`, `LIKELY`, `UNKNOWN`, `UNSUPPORTED`, `AMBIGUOUS`), header validation | **Updated** |
+| 03 | `filesystem-parsing` | [filesystem-parsing.md](./features/filesystem-parsing/filesystem-parsing.md) | MBR/GPT partition analysis, Dahua/Hikvision header parsing, Master Sector Map schema | **Updated** |
+| 04 | `video-carving` | [video-carving.md](./features/video-carving/video-carving.md) | Index parsing, sector carving fallback, GOP alignment, zero-transcoding remuxing, status tracking | **Updated** |
+| 05 | `timeline-sync` | [timeline-sync.md](./features/timeline-sync/timeline-sync.md) | Raw timestamp preservation, timezone interpretation, clock drift calibration, UTC master timeline | **Updated** |
+| 06 | `ai-analytics` | [ai-analytics.md](./features/ai-analytics/ai-analytics.md) | Local ONNX Runtime (YOLOv8) secondary triage, object/face/motion candidate indexing, Human-in-the-Loop review | **Updated** |
+| 07 | `evidence-search` | [evidence-search.md](./features/evidence-search/evidence-search.md) | Parameterized SQLite search queries across timestamps, camera channels, and verified AI tags | **Updated** |
+| 08 | `evidence-hashing` | [evidence-hashing.md](./features/evidence-hashing/evidence-hashing.md) | Export hash parity verification, artifact SHA-256 calculation, cryptographic provenance sidecar export | **Updated** |
+| 09 | `forensic-reporting` | [forensic-reporting.md](./features/forensic-reporting/forensic-reporting.md) | HTML/PDF Forensic Evidence Report generation (WeasyPrint + Jinja2); hash parity table, artifact provenance, human-reviewed AI findings, uncertainty disclaimers | **New** |
 
 ---
 
-## System Overview Diagram
+## 4. Layered System Architecture Diagram
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                          LOCUS ELECTRON DESKTOP SHELL                     │
 │  ┌─────────────────────────────────────────────────────────────────────┐  │
-│  │                     REACT + SHADCN UI FRONTEND                      │  │
-│  │   (Case Intake, Feature Tabs, Video Grid, Timeline, PDF Export)     │  │
+│  │                    REACT + TYPESCRIPT FRONTEND                      │  │
+│  │   (Case Intake, Sector Hex Viewer, Sync Timeline, Report Generator) │  │
 │  └──────────────────────────────────┬──────────────────────────────────┘  │
 └─────────────────────────────────────┼─────────────────────────────────────┘
-                                      │ HTTP REST / WebSockets (localhost:8000)
+                                      │ HTTP REST / WebSockets (127.0.0.1:8000)
                                       ▼
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                      FASTAPI PYTHON BACKEND ENGINE                        │
 │                                                                           │
 │  ┌────────────────────────┐  ┌────────────────────────┐  ┌─────────────┐  │
-│  │ 01. Acquisition (dc3dd)│  │ 02. Device ID & Scanners│  │ 03. FS Parser│  │
+│  │ 01. Evidence Ingestion │  │ 02. Device Layout ID   │  │ 03. FS Map  │  │
 │  └────────────────────────┘  └────────────────────────┘  └─────────────┘  │
 │  ┌────────────────────────┐  ┌────────────────────────┐  ┌─────────────┐  │
-│  │ 04. Sector Carver      │  │ 05. Timeline Sync Bus  │  │ 06. ONNX AI │  │
+│  │ 04. Stream Carver      │  │ 05. Timeline Sync Bus  │  │ 06. ONNX AI │  │
 │  └────────────────────────┘  └────────────────────────┘  └─────────────┘  │
-│  ┌────────────────────────┐  ┌────────────────────────┐                   │
-│  │ 07. Evidence Search    │  │ 08. Hash Verification  │                   │
-│  └────────────────────────┘  └────────────────────────┘                   │
+│  ┌────────────────────────┐  ┌────────────────────────┐  ┌─────────────┐  │
+│  │ 07. Evidence Search    │  │ 08. Hash Parity Engine │  │ 09. Report  │  │
+│  └────────────────────────┘  └────────────────────────┘  └─────────────┘  │
 └─────────────────────────────────────┬─────────────────────────────────────┘
                                       │
                                       ▼
                            ┌─────────────────────┐
                            │ SQLite Database     │
-                           │ (`forensics.db`)    │
+                           │ (`case_meta.db`)    │
                            └─────────────────────┘
 ```

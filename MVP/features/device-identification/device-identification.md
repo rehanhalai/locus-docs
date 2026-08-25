@@ -1,108 +1,107 @@
-# Feature 02: Device & File System Identification
+# Feature 02: Multi-Tier Device & Storage Layout Identification
 
 **Back to [[MVP/MVP|MVP]]**
 
 ---
 
-## What it Does
+## 1. Identification Pipeline Architecture
 
-Once the disk image is safely loaded and write-block protected, Locus needs to determine t looks for an orpwhich company manufactured the DVR/NVR (e.g., Dahua, Hikvision, CP Plus) and how its custom file system is formatted.
+Device identification in Locus treats magic signatures as **initial candidate clues, not definitive forensic proof**. 
 
-Locus automatically scans the initial physical sectors of the `.dd` file searching for hidden manufacturer "magic byte signatures" (like `DHAV` for Dahua or `HKFS` for Hikvision). Within 1 second, Locus identifies the manufacturer, partition boundaries, and camera channel count (e.g., 8 channels vs 16 channels), displaying the detected DVR profile on the UI so the correct carving engine is selected automatically.
+A signature scan alone is insufficient to identify drive structure. A multi-tier validation pipeline verifies signature context, header layout, partition structures, and metadata consistency before assigning vendor confidence:
 
----
-
-## Component Responsibility & Architecture
-
-- **FastAPI Engine (Python Layer):** Reads Sector 0, Sector 1, and partition offsets; runs signature matching algorithms using the `Factory Strategy Pattern` (`DeviceIdentifierFactory`).
-- **OEM Scanner Registry:** Instantiates specific OEM scanners (`DahuaScanner`, `HikvisionScanner`, `CPPlusScanner`).
-- **React UI (Electron):** Renders the detected DVR Profile Card (OEM logo, model name, channel count, filesystem format).
-- **SQLite Database:** Updates the `evidence_files` record with the detected OEM metadata.
-
----
-
-## SQLite Database Schema Updates (`evidence_files`)
-
-| Column Name     | Data Type | Sample Value         | Purpose                            |
-| :-------------- | :-------- | :------------------- | :--------------------------------- |
-| `oem_name`      | `TEXT`    | `"Dahua Technology"` | Identified manufacturer            |
-| `filesystem`    | `TEXT`    | `"DHFS v2.1"`        | Proprietary filesystem format      |
-| `channel_count` | `INTEGER` | `8`                  | Number of recorded camera channels |
-| `sector_size`   | `INTEGER` | `512`                | Sector block size in bytes         |
-| `confidence`    | `REAL`    | `0.99`               | Identification confidence score    |
-
----
-
-## Step-by-Step Data Flow Pipeline
-
-```text
-1. Automatic Ingestion Event ──► Triggers `POST /api/device/identify`
-                                           │
-                                           ▼
-2. Python Sector Reader ────────► Reads Sector 0, 1, and partition table offsets
-                                           │
-                                           ▼
-3. Signature Matching Engine ───► Compares raw bytes against OEM magic registry (`DHAV`, `HKFS`, etc.)
-                                           │
-                                           ▼
-4. Metadata Extractor ──────────► Unpacks channel count, DVR serial string, and sector size
-                                           │
-                                           ▼
-5. SQLite Database Update ──────► Stores OEM profile metadata in `evidence_files`
-                                           │
-                                           ▼
-6. React Dashboard Update ──────► Renders detected DVR profile card with channel grid buttons
+```
+Raw Evidence Image (.dd)
+    │
+    ▼
+[Tier 1: Sector Signature Scanner]
+- Sector-aligned read across initial 100 MB.
+- Match candidate magic signatures (e.g., "DHAV", "HKFS").
+    │
+    ▼
+[Tier 2: Candidate Identification]
+- Register candidate vendor profiles (Dahua, Hikvision, etc.).
+    │
+    ▼
+[Tier 3: Header Structure Validation]
+- Unpack and validate sector block header fields (length, magic, checksum).
+    │
+    ▼
+[Tier 4: Storage Layout & Partition Analysis]
+- Verify MBR/GPT partition tables and raw sector ring-buffer bounds.
+    │
+    ▼
+[Tier 5: Metadata & Channel Verification]
+- Validate channel IDs, stream types (H.264/H.265), and timestamp monotonicity.
+    │
+    ▼
+[Tier 6: Confidence Assignment & Adapter Selection]
+- Assign confidence: KNOWN, LIKELY, UNKNOWN, UNSUPPORTED, or AMBIGUOUS.
+- Select validated adapter (e.g., DahuaDHAVAdapter, HikvisionHKFSAdapter).
 ```
 
 ---
 
-## Sequence Diagram
+## 2. Distinction of Storage Attributes
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant UI as React UI (Electron)
-    participant API as FastAPI Backend
-    participant Factory as OEM Scanner Factory
-    participant DB as SQLite DB
+Locus strictly separates distinct device and format parameters:
 
-    UI->>API: POST /api/device/identify {file_path}
-    API->>API: Read Sector 0 & Partition Offsets
-    API->>Factory: IdentifyOEM(sector_bytes)
-    alt Matches `DHAV`
-        Factory-->>API: Returns Dahua Profile (8 Channels, DHFS)
-    else Matches `HKFS`
-        Factory-->>API: Returns Hikvision Profile (16 Channels, HKFS)
-    else Unknown Signature
-        Factory-->>API: Returns Generic OEM Profile (Manual Offset Selection)
-    end
-    API->>DB: UPDATE evidence_files SET oem="Dahua", channels=8
-    API-->>UI: 200 OK {oem: "Dahua", filesystem: "DHFS", channels: 8}
-    UI->>UI: Render DVR Profile Badge & Enable Camera Channel Selector
+| Parameter | Example Value | Description |
+| :--- | :--- | :--- |
+| **Vendor** | Dahua Technology | Device manufacturer |
+| **Model** | NVR4216-4KS2 | Hardware model series |
+| **Firmware** | V4.000.0000001.0 | Device firmware version profile |
+| **Storage Layout**| Raw Ring-Buffer | Physical disk sector allocation schema |
+| **Filesystem** | DHAV Index Structure | File indexing mechanism |
+| **Recording Format**| `.dav` / DHAV Wrapper | Sector wrapper container format |
+| **Video Codec** | H.264 / High Profile | Elementary video bitstream encoding |
+
+---
+
+## 3. Explicit Confidence Classification Framework
+
+If evidence parameters are contradictory or unverified, Locus assigns explicit confidence classifications without forcing a false positive match:
+
+- **`KNOWN`:** Validated magic bytes + matching header checksum + valid partition map + verified channel metadata.
+- **`LIKELY`:** Validated magic bytes + matching header structure, but partial index metadata.
+- **`UNKNOWN`:** Unrecognized signatures or malformed sector headers. Vendor classification set to `UNKNOWN`.
+- **`UNSUPPORTED`:** Recognized vendor signature, but firmware profile is explicitly flagged as unsupported.
+- **`AMBIGUOUS`:** Sector signatures match multiple competing vendor definitions (e.g., Dahua OEM derivatives without clear firmware identifiers).
+
+---
+
+## 4. Scoped Binary Header Profile Schema
+
+For every binary header format claim, Locus maintains a scoped profile block:
+
+```yaml
+vendor_profile:
+  vendor: "Dahua Technology"
+  model_series: "NVR4xxx / HCVR5xxx"
+  firmware_profile: "V3.210+ / V4.0+"
+  observed_format: "DHAV 32-byte sector header"
+  evidence_source: "Laboratory test image dahua_nvr4216_500gb.dd"
+  validation_status: "PARTIALLY_VALIDATED"
+  known_limitations: "Requires 512-byte sector alignment; bad sector zero-padding required on damaged drives."
 ```
 
 ---
 
-## Technical Specifications & APIs
+## 5. API Response Schema (`POST /api/device/identify`)
 
-- **Folder Location:** `Projects/locus/MVP/features/device-identification/`
-- **Python Module:** `app.carving.scanners.device_id`
-- **FastAPI Endpoint:** `POST /api/device/identify`
-- **Sample Request Payload:**
-  ```json
-  {
-    "file_path": "/storage/evidence/dvr_dahua_500mb.dd"
-  }
-  ```
-- **Sample Response Payload:**
-  ```json
-  {
-    "status": "identified",
-    "oem": "Dahua Technology",
-    "filesystem": "DHFS v2.1",
-    "channels": 8,
-    "confidence": 0.99,
-    "sector_size": 512,
-    "magic_bytes_hex": "44484156"
-  }
-  ```
+```json
+{
+  "status": "IDENTIFIED",
+  "evidence_id": "EVD-2026-001",
+  "candidate_vendor": "Dahua Technology",
+  "model_series": "NVR4xxx Series",
+  "confidence_level": "LIKELY",
+  "detected_layout": "DHAV Sector Index",
+  "partition_offset_sectors": 2048,
+  "sector_size_bytes": 512,
+  "detected_channels": [1, 2, 3, 4],
+  "magic_signature_hex": "44484156",
+  "selected_adapter": "DahuaDHAVAdapter",
+  "adapter_status": "PARTIALLY_VALIDATED"
+}
+```

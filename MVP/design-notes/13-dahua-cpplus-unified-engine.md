@@ -1,25 +1,33 @@
-# Decision Note: Unified Dahua & CP PLUS Engine
+# Decision Note: Dahua and CP Plus Forensic Adapter Architecture
 
-*This document confirms the OEM relationship and unified engine architecture for Dahua Technology and CP PLUS.*
-
----
-
-## 1. The Dahua ↔ CP PLUS OEM Relationship
-
-- **Background:** CP PLUS (a leading surveillance brand in India) historically partners with and OEMs hardware and firmware from **Dahua Technology**.
-- **Filesystem Identity:** CP PLUS DVRs and NVRs format storage media using Dahua's proprietary **DHFS (Dahua File System)** architecture.
-- **Frame Packaging:** Video on CP PLUS drives is packaged in the **DHAV container format**:
-  - Magic Header: `0x44 0x48 0x41 0x56` (`DHAV`)
-  - Magic Footer: `0x64 0x68 0x61 0x76` (`dhav`)
-  - Metadata layout: Identical channel ID byte offsets, frame type flags, payload length fields, and timestamp encoding.
+**Back to [[MVP/MVP|MVP]]**
 
 ---
 
-## 2. Engineering Decision: The "DHFS Unified Engine"
+## 1. Dahua & CP Plus OEM Format Relationship
 
-**Decision:** Locus will use a single **DHFS / DHAV Engine** to parse both Dahua and CP PLUS devices.
+CP Plus surveillance recorders in South Asia frequently utilize hardware and firmware licensed from Dahua Technology. Consequently, many CP Plus models format storage media using variants of Dahua's `DHAV` container structure (`0x44 0x48 0x41 0x56`).
 
-### Key Benefits:
-1. **Zero Code Duplication:** We do not need to write separate parsers for Dahua and CP PLUS.
-2. **Massive Market Coverage:** This single engine covers the vast majority of Indian retail and SMB installations (CP PLUS) as well as global Dahua systems.
-3. **Automatic Rebranding Support:** Any other Dahua OEM brand (e.g., Amcrest, Lorex, Q-See) will also work out-of-the-box on this exact same engine.
+However, from a digital forensics perspective:
+
+> [!WARNING]
+> **Forensic Rule on OEM Assumptions:**  
+> **Locus does not blindly assume CP Plus = Dahua for all models and firmware versions.**  
+> While CP Plus Cosmic/Orange series devices often match Dahua DHAV sector structures, specific CP Plus firmware profiles may introduce modified index tables or non-standard frame headers.
+
+---
+
+## 2. Adapter Architecture & Validation Status
+
+Locus maintains separate modular adapters for Dahua and CP Plus to allow independent validation tracking:
+
+- **`DahuaDHAVAdapter`:** Dedicated adapter for Dahua NVR4xxx / HCVR5xxx profiles.  
+  - *Validation Status:* **Partially Validated** (Tested on laboratory `.dd` images).
+- **`CPPlusAdapter`:** Dedicated adapter for CP Plus Cosmic series profiles (Phase 2 — not in MVP).  
+  - *Validation Status:* **Researching** *(Requires additional laboratory model/firmware validation data)*.
+
+---
+
+## 3. Fallback Mechanism
+
+If a CP Plus image exhibits standard `DHAV` magic signatures and matching header checksums, `CPPlusAdapter` delegates sector decoding to the validated DHAV parsing pipeline while recording `adapter_used = "CPPlusAdapter (DHAV Fallback)"` in artifact provenance records. If header parameters deviate, the adapter flags the layout as `AMBIGUOUS` or `UNSUPPORTED`.
