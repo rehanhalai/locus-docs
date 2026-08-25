@@ -66,7 +66,7 @@ However, the video frames are still:
 - **The Mistake:** Decoding and re-compressing video (Transcoding) takes high CPU/GPU power, takes minutes per clip, and degrades forensic video quality.
 - **The Locus Method (Remuxing / Stream Copy):** Locus feeds the raw H.264 NAL bytes directly into **PyAV / FFmpeg** with stream-copy mode (`-c:v copy`).
 - FFmpeg simply constructs standard MP4 container metadata (moov/mdat atoms) around the existing video bytes.
-- **Performance:** A 10-minute 1080p surveillance video clip is generated in **less than 200 milliseconds** with **100% bit-for-bit forensic preservation**.
+- **Performance:** A 10-minute 1080p surveillance video clip is generated **near-instantaneously** with **100% bit-for-bit forensic preservation**.
 
 ---
 

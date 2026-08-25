@@ -123,7 +123,7 @@ Locus provides three calibration workflows to establish ground-truth synchroniza
 
 1. **Synchronized Multi-View Split Export:** Locus exports a combined multi-grid MP4 (e.g., 2x2 matrix) composited into a single video frame with a burned-in Master Synchronized UTC banner.
 2. **Sidecar Synchronization File (`.sync.json`):** Exported `.mp4` files are accompanied by a forensic descriptor containing the channel file hash, applied offset ($\Delta t$), and calibration rationale.
-3. **Audit Trail Documentation:** Every manual calibration adjustment is permanently logged with the investigator's credentials for court admissibility.
+3. **Audit Trail Documentation:** Every manual calibration adjustment is permanently logged with the investigator's credentials for full forensic provenance.
 
 ---
 
@@ -138,7 +138,7 @@ A DVR video actually has three different clocks, and they often disagree:
 3. **The Burned-In Clock:** The physical pixels painted onto the screen showing the date and time.
 
 ### The "Sticky Note" Rule (Non-Destructive Layer)
-We **cannot** edit the original video files to fix broken timestamps—that is called tampering with evidence, and it will get thrown out of court. 
+We **cannot** edit the original video files to fix broken timestamps—that is called tampering with evidence, which destroys evidence integrity. 
 Instead, Locus leaves the raw video files completely untouched. It just creates a "Sticky Note" in the database that says: *"Camera 2 is exactly 5 minutes too fast."* When playing the video, Locus reads the sticky note and virtually shifts the video on the screen.
 
 ### The Math Formula Translated

@@ -16,7 +16,7 @@ Think of it as the **Google Search Bar** for your CCTV footage.
 
 ## Why This Feature is Critical
 
-- **Speed:** Without search, the investigator has to manually scrub through 480 camera-days of footage. With search, they get answers in 2 milliseconds (a single SQLite query).
+- **Speed:** Without search, the investigator has to manually scrub through 480 camera-days of footage. With search, they get answers with sub-second latency (via indexed SQLite queries).
 - **Precision:** The investigator can combine multiple filters (camera + time range + object type + confidence threshold) to narrow down from 10,000 events to the exact 3 they need.
 - **Court narrative:** Investigators need to build a chronological timeline of a suspect's movements across cameras. Search makes this possible in minutes, not days.
 
@@ -33,14 +33,14 @@ Evidence Search is the card catalog for CCTV footage. The AI Analytics engine al
 A compound query combines multiple conditions:
 - *"Camera 2"* **AND** *"Person"* **AND** *"After 14:00"* **AND** *"Before 16:00"* **AND** *"Confidence > 80%"*
 
-SQLite handles this natively through indexed `WHERE` clauses, returning results in under 2 milliseconds even with 100,000+ events.
+SQLite handles this natively through indexed `WHERE` clauses, returning results with low latency even with 100,000+ events.
 
 ---
 
 ## Component Responsibility & Architecture
 
 - **FastAPI Engine (Python Layer):** Receives search parameters from the React UI, constructs parameterized SQL queries, executes against `ai_analytics_events`, and returns paginated results with optional thumbnail blobs.
-- **SQLite Database:** The indexed `ai_analytics_events` table is the data source. B-Tree indexes on `(channel_id, event_type, start_timestamp)` ensure sub-millisecond query performance.
+- **SQLite Database:** The indexed `ai_analytics_events` table is the data source. B-Tree indexes on `(channel_id, event_type, start_timestamp)` ensure high-speed, O(log N) query performance.
 - **React UI (Electron):** Renders the search bar, filter dropdowns, results gallery, and timeline heatmap markers. Clicking a result seeks the master video playhead to that exact timestamp.
 
 ---
@@ -78,7 +78,7 @@ ORDER BY start_timestamp ASC
 LIMIT :page_size OFFSET :offset;
 ```
 
-With a B-Tree index on `(channel_id, event_type, start_timestamp)`, this query returns results in **under 2 milliseconds** even on datasets with 100,000+ events.
+With a B-Tree index on `(channel_id, event_type, start_timestamp)`, this query returns results with **sub-second latency** even on datasets with 100,000+ events.
 
 ---
 
@@ -124,7 +124,7 @@ Search results are also rendered as **colored markers** directly on the master v
 3. FastAPI Constructs SQL ─────► Builds parameterized WHERE clause from filters
                                            │
                                            ▼
-4. SQLite B-Tree Lookup ───────► Indexed query returns results in < 2ms
+4. SQLite B-Tree Lookup ───────► Indexed query returns results instantly
                                            │
                                            ▼
 5. JSON Response ──────────────► Paginated event list with timestamps + thumbnails
@@ -151,7 +151,7 @@ sequenceDiagram
     Officer->>UI: Sets filters: Camera 2, Person, >80%, 14:00–16:00
     UI->>API: GET /api/search/events?channel_id=2&type=PERSON&min_confidence=0.8&start=1718892000&end=1718899200
     API->>DB: SELECT ... FROM ai_analytics_events WHERE channel_id=2 AND event_type='PERSON' AND confidence>=0.8 AND ...
-    DB-->>API: Returns 15 matching event records (< 2ms)
+    DB-->>API: Returns 15 matching event records (Low Latency)
     API-->>UI: 200 OK {total: 15, events: [{event_id: 8001, timestamp: 1718892130, confidence: 0.88, ...}, ...]}
     UI->>UI: Render thumbnail gallery + timeline markers
     Officer->>UI: Clicks thumbnail #4 (timestamp: 14:22:07)

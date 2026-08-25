@@ -17,9 +17,9 @@
 
 ## 2. Engineering Decision: The "DHFS Unified Engine"
 
-**Decision:** Locus will use a single **DHFS / DHAV Engine** to parse both Dahua and CP PLUS devices.
+**Decision:** Locus will use a primary **DHFS / DHAV Engine** for Dahua and DHAV-compatible CP PLUS devices, accessed through a `CPPlusAdapter` layer.
 
 ### Key Benefits:
-1. **Zero Code Duplication:** We do not need to write separate parsers for Dahua and CP PLUS.
+1. **Zero Code Duplication:** We do not need to write separate parsers for Dahua and CP PLUS DHAV streams.
 2. **Massive Market Coverage:** This single engine covers the vast majority of Indian retail and SMB installations (CP PLUS) as well as global Dahua systems.
-3. **Automatic Rebranding Support:** Any other Dahua OEM brand (e.g., Amcrest, Lorex, Q-See) will also work out-of-the-box on this exact same engine.
+3. **Graceful Fallback:** The `CPPlusAdapter` validates the DHAV header structure. If non-DHAV headers (e.g., Xiongmai / XM or generic ES) are detected on non-Dahua OEM CP Plus models, the pipeline safely falls back to the generic H.264 NAL carver or flags the stream as `UNKNOWN` rather than forcing a corrupted parse.

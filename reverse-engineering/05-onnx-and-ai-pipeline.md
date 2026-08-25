@@ -40,8 +40,8 @@ If we use standard **PyTorch** to run our YOLOv8 object detection AI model:
 - **Storage:** Detected objects (Person, Vehicle, Motion) are saved as JSON tags in the SQLite database.
 
 ### Scenario B: Instant Timeline Search (User Query)
-- **Workflow:** Investigator searches: *"Show all red vehicles between 2:00 PM and 3:00 PM"*.
-- **Execution:** Locus does **not** rerun the AI! It executes a 2-millisecond SQL query: `SELECT * FROM timeline_events WHERE object='vehicle' AND color='red'`.
+- **Workflow:** Investigator searches: *"Show all vehicles between 2:00 PM and 3:00 PM"*.
+- **Execution:** Locus does **not** rerun the AI! It executes a sub-second SQL query: `SELECT * FROM timeline_events WHERE object='vehicle' AND confidence > 0.8`.
 - **Result:** Timeline scrub bar instantly places highlight markers at the exact timestamps.
 
 ### Scenario C: Facial Recognition Matching

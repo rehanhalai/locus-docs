@@ -12,15 +12,15 @@ But this is criminal evidence. The moment a video leaves the Locus application, 
 
 **Hash Verification & Integrity Export** solves this by:
 1. Exporting the video clip using **zero-transcoding** (raw byte copy, no pixel changes).
-2. Calculating a mathematical fingerprint (SHA-256 hash) of the exported file.
-3. Generating a cryptographic **Audit Trail Sidecar** (a `.json` receipt + optional `.pdf`) that permanently links the exported clip back to the original seized hard drive.
-4. Re-verifying the source drive hash to prove the original evidence hasn't been tampered with since the day it was seized.
+2. Calculating cryptographic fingerprints (SHA-256 and MD5) of the exported artifact file.
+3. Generating a cryptographic **Audit Trail Sidecar** (`.sync.json` receipt + `.pdf`) that permanently links the exported clip and sector offsets back to the original seized hard drive and its baseline ingestion hash.
+4. Providing an on-demand verification service (`POST /api/verify`) to re-validate the entire multi-terabyte source image hash at case closure.
 
 ---
 
 ## Why This Feature is Critical
 
-- **Court admissibility:** Under Indian Evidence Act Section 65B and ISO 27037, digital evidence must have a provable chain of custody. Without cryptographic verification, the evidence can be challenged and thrown out.
+- **Evidence Provenance & Verification:** Under ISO/IEC 27037 and legal electronic evidence frameworks (BSA 2023 / Section 65B), digital evidence requires a provable chain of custody. Cryptographic verification ensures the evidence is defensible against tampering claims.
 - **Tamper detection:** If even a single bit of the exported video is changed (intentionally or accidentally), the SHA-256 hash will be completely different, instantly exposing tampering.
 - **Trust:** The judge doesn't need to trust the software or the investigator. They only need to trust mathematics — the hash either matches or it doesn't.
 
@@ -62,20 +62,18 @@ Changing even a single bit (0 → 1) in a video file causes over **50% of the SH
 When the investigator clicks "Export," Locus runs a **three-stage integrity check:**
 
 ```text
-Stage 1: SOURCE VERIFICATION
-  └─► Recalculate SHA-256 of the original .dd disk image
-  └─► Compare against the baseline hash stored during ingestion (Feature 01)
-  └─► If mismatch → ABORT export + display RED WARNING
-       "⚠ Source evidence has been altered since ingestion!"
+Stage 1: ZERO-TRANSCODING STREAM EXTRACTION
+  └─► Read exact sector offsets from read-only .dd file handle (O_RDONLY)
+  └─► Stream copy the selected raw NAL units into a new .mp4 container via PyAV
+  └─► No decoding, no re-encoding, bit-for-bit video payload fidelity
 
-Stage 2: ZERO-TRANSCODING EXPORT
-  └─► Stream copy the selected raw bytes into a new .mp4 container
-  └─► No decoding, no re-encoding, no pixel modification
+Stage 2: OUTPUT ARTIFACT FINGERPRINTING
+  └─► Calculate SHA-256 and MD5 of the newly created .mp4 export artifact
+  └─► Record exact byte length, frame count, and sector boundaries
 
-Stage 3: OUTPUT FINGERPRINTING
-  └─► Calculate SHA-256 of the newly created .mp4 file
-  └─► Generate the Audit Trail Sidecar (.json + .pdf)
-  └─► Log everything to the `audit_trail` table
+Stage 3: PROVENANCE SIDECAR GENERATION & AUDIT LOG
+  └─► Generate the Audit Trail Sidecar (.sync.json + summary .pdf) linking export hash to source disk hash
+  └─► Log export action, timestamps, investigator ID, and sector ranges to the SQLite `audit_trail` table
 ```
 
 ---
@@ -167,29 +165,22 @@ Every exported clip is accompanied by a forensic receipt file that permanently d
 1. Export Request ──────────────► Investigator selects clip + clicks "Export Evidence"
                                            │
                                            ▼
-2. Source Integrity Check ─────► Recalculate SHA-256 of source .dd image
+2. Read-Only Byte Extraction ───► Read raw sector slice from immutable .dd file handle
                                            │
                                            ▼
-3. Baseline Comparison ────────► Compare against ingestion hash in `evidence_files`
-                                           │
-                                       ┌───┴───┐
-                                    MATCH?   MISMATCH?
-                                       │         │
-                                       ▼         ▼
-4a. Stream Copy Export ────────►  Export    ABORT + RED
-    (zero transcoding)            proceeds    WARNING
-                                       │
-                                       ▼
-5. Output Hash Calculation ────► SHA-256 + MD5 of the new .mp4 file
+3. Zero-Transcoding Remux ──────► PyAV packages raw NAL units into standard .mp4 container
                                            │
                                            ▼
-6. Sidecar Generation ─────────► Generate `suspect_clip.sync.json` + optional `.pdf`
+4. Output Hash Fingerprinting ──► Calculate SHA-256 and MD5 of the new .mp4 export
                                            │
                                            ▼
-7. SQLite Logging ─────────────► INSERT into `exported_clips` + `audit_trail`
+5. Sidecar Generation ──────────► Generate `suspect_clip.sync.json` linking clip to source hash
                                            │
                                            ▼
-8. UI Confirmation ────────────► Green badge: "Export Complete — Integrity Verified ✓"
+6. SQLite Logging ──────────────► INSERT into `exported_clips` + `audit_trail`
+                                           │
+                                           ▼
+7. UI Confirmation ─────────────► Green badge: "Export Complete — Provenance Verified ✓"
 ```
 
 ---
@@ -202,29 +193,22 @@ sequenceDiagram
     actor Officer as Forensic Officer
     participant UI as React UI (Electron)
     participant API as FastAPI Backend
-    participant Hash as hashlib Engine
     participant PyAV as PyAV / FFmpeg
+    participant Hash as hashlib Engine
     participant DB as SQLite DB
 
     Officer->>UI: Selects clip "cam2_clip01.mp4" → clicks "Export Evidence"
     UI->>API: POST /api/export {clip_id: 5001, destination: "/usb/export/"}
-    API->>Hash: Recalculate SHA-256 of source .dd image (streaming 64KB blocks)
-    Hash-->>API: Source hash: "e3b0c44298fc..."
-    API->>DB: SELECT sha256_hash FROM evidence_files WHERE id = "ev_101"
+    API->>DB: Fetch source disk metadata & baseline hash for evidence_id="ev_101"
     DB-->>API: Baseline hash: "e3b0c44298fc..."
-    alt Hashes Match
-        API->>PyAV: Stream copy raw bytes → /usb/export/suspect_clip.mp4
-        PyAV-->>API: Export complete (zero transcoding)
-        API->>Hash: Calculate SHA-256 of suspect_clip.mp4
-        Hash-->>API: Output hash: "9f86d081884c..."
-        API->>API: Generate suspect_clip.sync.json sidecar
-        API->>DB: INSERT INTO exported_clips (...) + INSERT INTO audit_trail (...)
-        API-->>UI: 200 OK {status: "exported", output_sha256: "9f86d081884c..."}
-        UI->>Officer: Green badge: "Export Complete — Integrity Verified ✓"
-    else Hashes Mismatch
-        API-->>UI: 409 CONFLICT {status: "INTEGRITY_FAILURE", message: "Source evidence altered!"}
-        UI->>Officer: RED WARNING: "⚠ Source evidence has been modified since ingestion!"
-    end
+    API->>PyAV: Stream copy raw bytes from sector offset → /usb/export/suspect_clip.mp4 (Read-Only)
+    PyAV-->>API: Export complete (zero transcoding)
+    API->>Hash: Calculate SHA-256 & MD5 of exported suspect_clip.mp4
+    Hash-->>API: Output artifact hash: "9f86d081884c..."
+    API->>API: Generate suspect_clip.sync.json provenance sidecar
+    API->>DB: INSERT INTO exported_clips (...) + INSERT INTO audit_trail (...)
+    API-->>UI: 200 OK {status: "exported", output_sha256: "9f86d081884c...", sidecar: "suspect_clip.sync.json"}
+    UI->>Officer: Green badge: "Export Complete — Provenance Verified ✓"
 ```
 
 ---

@@ -6,7 +6,7 @@
 
 ## 1. What is Step 5 and Why Is It Needed?
 
-Now that Locus has identified the vendor (e.g., Dahua/CP PLUS or Hikvision), it faces a major hurdle:
+Now that Locus has identified the vendor (e.g., Dahua or Hikvision), it faces a major hurdle:
 
 **The Interleaving & Scrambling Problem:**
 CCTV hard drives do not store video files sequentially. A 4-camera DVR records all 4 cameras simultaneously, writing small chunks from Camera 1, then Camera 2, then Camera 3, then Camera 4, scrambled across sectors in a circular buffer.
@@ -22,9 +22,9 @@ Locus scans the disk, decodes every proprietary frame header, and builds an in-m
 
 ---
 
-## 2. Anatomy of a Dahua / CP PLUS Frame Header
+## 2. Anatomy of a Dahua Frame Header
 
-For Dahua and CP PLUS (`DHAV`), every video chunk starts with a 32-byte binary header:
+For Dahua (`DHAV`), every video chunk starts with a 32-byte binary header:
 
 ```
 Offset 0x00: [ 4 Bytes ] -> Magic: "DHAV" (0x44 0x48 0x41 0x56)
@@ -75,7 +75,7 @@ If a program executes standard single `INSERT INTO` queries in a loop, SQLite wi
 ## 5. What This Unlocks for the Next Step (Carving)
 
 Once the `stream_headers` table is populated:
-- Carving out **"Camera 2 between 2:00 PM and 2:15 PM"** requires a single millisecond SQL query:
+- Carving out **"Camera 2 between 2:00 PM and 2:15 PM"** requires a single low-latency SQL query:
   ```sql
   SELECT sector_offset, payload_length 
   FROM stream_headers 

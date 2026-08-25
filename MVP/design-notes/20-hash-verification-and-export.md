@@ -1,10 +1,10 @@
 # Step 9 Specification: Hash Verification & Integrity Export
 
-*This document outlines the cryptographic and operational protocols used by Locus to guarantee that exported video evidence maintains a mathematically provable chain of custody, ensuring admissibility in a court of law.*
+*This document outlines the cryptographic and operational protocols used by Locus to guarantee that exported video evidence maintains a mathematically provable chain of custody, ensuring forensic integrity and verifiable provenance.*
 
 ---
 
-## 1. The Court Admissibility Problem
+## 1. The Evidence Lineage & Integrity Challenge
 
 When an investigator extracts a 5-minute `.mp4` clip from a 1-Terabyte surveillance drive, they are essentially creating a *new* file. A defense attorney will naturally challenge the authenticity of this new file:
 - *"How do we know the police didn't alter the footage?"*
@@ -18,19 +18,20 @@ When an investigator extracts a 5-minute `.mp4` clip from a 1-Terabyte surveilla
 ## 2. The Zero-Transcoding Guarantee
 
 To maintain true forensic integrity, Locus enforces a strict **Zero-Transcoding Policy** during export.
-- **No Re-encoding:** The system does not decode and re-encode the video pixels (which would alter the hash and potentially degrade image quality).
+- **No Re-encoding:** The system does not decode and re-encode the video pixels (which causes generation loss and degrades image quality).
 - **Raw Byte Slicing:** Locus uses FFmpeg stream copying (`-c:v copy`) to lift the exact H.264/H.265 NAL units directly from the physical disk sectors and place them into an `.mp4` container.
-- **Result:** The video data presented in court is bit-for-bit identical to the video data written by the DVR motherboard.
+- **Result:** The video stream data is bit-for-bit identical to the video data written by the DVR motherboard.
 
 ---
 
 ## 3. The Cryptographic Hash Chain
 
-When the investigator finalizes their trimmed clip and clicks "Export," Locus performs a sequential integrity check:
+When the investigator finalizes their trimmed clip and clicks "Export," Locus executes a streamlined provenance sequence:
 
-1. **Verify Source Integrity:** Locus checks the current SHA-256 hash of the source disk (or `.dd` image) against the original hash generated during Step 1 (Acquisition). This proves the source hasn't been altered.
-2. **Export Video:** The raw bytes are sliced into `suspect_clip.mp4`.
-3. **Generate Output Hash:** Locus immediately calculates the SHA-256 hash of the newly created `suspect_clip.mp4`.
+1. **Read-Only Verification:** Locus operates under strict read-only file locks (`O_RDONLY`), referencing the verified baseline SHA-256 hash generated during Step 1 (Ingestion).
+2. **Export Video:** The raw NAL units are sliced from the exact disk sector offsets and remuxed into `suspect_clip.mp4` (zero transcoding).
+3. **Generate Output Artifact Hash:** Locus immediately calculates the cryptographic SHA-256 and MD5 hashes of the newly created `suspect_clip.mp4`.
+4. **On-Demand Whole-Disk Verification:** Full re-verification of the multi-terabyte `.dd` file is performed asynchronously on-demand (`POST /api/verify`) or during case closure, avoiding multi-hour I/O bottlenecks during individual clip exports.
 
 ---
 

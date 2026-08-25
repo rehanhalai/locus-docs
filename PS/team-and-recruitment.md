@@ -16,7 +16,7 @@
 
 | # | Role | Focus Area | Core Stack / Skills |
 | :---: | :--- | :--- | :--- |
-| **1** | **Team Lead & Architect** *(Rehan)* | System architecture, DB schema, API design, deployment | NestJS/FastAPI, PostgreSQL, Docker, Redis |
+| **1** | **Team Lead & Architect** *(Rehan)* | System architecture, DB schema, API design, deployment | Electron, FastAPI, SQLite, Architecture |
 | **2** | **Full-Stack Developer** *(Priority Hire #1)* | Case management API, REST/WebSockets, SQLite integration | React, TypeScript, FastAPI, SQLite |
 | **3** | **Python Systems Dev** *(Priority Hire #2)* | Raw disk parsing, binary headers, sector carving, stream decode | Python, Binary I/O, PyAV, FFmpeg |
 | **4** | **AI / CV Developer** | Video analytics, object/face detection, motion heatmaps | Python, PyTorch, YOLOv8, OpenCV |

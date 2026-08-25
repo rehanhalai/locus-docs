@@ -1,4 +1,4 @@
-# 4. Forensics & Hashing (Legal Admissibility)
+# 4. Forensics & Hashing (Integrity & Provenance)
 
 In a court of law, a defense lawyer will always ask: *"How do we know the police didn't edit this video to frame my client? How do we know this video actually came from that specific DVR?"*
 
@@ -12,9 +12,9 @@ If you run a 10 GB file through a SHA-256 algorithm, it generates a unique strin
 If you change even a **single pixel**, or a single bit of data in that 10 GB file, the resulting Hash will completely change. 
 
 ## The Chain of Custody (Our Workflow)
-To make our software court-ready, we build a "Chain of Custody" into our system:
+To make our software forensically sound, we build a "Chain of Custody" into our system:
 
-1. **Ingestion Hash**: When the police officer uploads the raw 500 GB `.dd` disk image to our server, our backend immediately calculates its SHA-256 hash. 
+1. **Ingestion Hash**: When the investigator selects the raw 500 GB `.dd` disk image in the local application, our backend immediately calculates its baseline SHA-256 hash. 
 2. **Carving**: Our software carves out the deleted video from the raw sectors.
 3. **Extraction Hash**: We calculate the SHA-256 hash of the extracted `.mp4` video clip.
 

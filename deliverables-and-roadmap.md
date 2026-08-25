@@ -35,7 +35,7 @@
 ### Phase 2: Aug 31 – Sept 6 (Core MVP: Carving Engine & UI Dashboard)
 
 - [ ] **Python Acquisition, Carving & Remuxing**
-  - [ ] Integrate `dc3dd` subprocess for live physical drive acquisition with bad-sector zero-padding.
+  - [ ] Integrate `dc3dd` subprocess for live physical drive acquisition (requires hardware write-blocker & Admin/Root).
   - [ ] Implement read-only file handler (`open(filepath, 'rb')`) with baseline SHA-256 & MD5 hash calculation on ingestion.
   - [ ] Build Dahua (`DHAV` magic header) sector scanner to identify frame boundaries and raw timestamps.
   - [ ] Build Hikvision sector scanner pattern matching logic for proprietary headers.
@@ -71,5 +71,6 @@
 ### Phase 4: Sept 12 – Sept 20 (Buffer & Polish)
 
 - [ ] Polish cross-platform build execution on Windows (`.exe`) and Linux (`.AppImage`).
+- [ ] **Ground-Truth Validation:** Construct a controlled DVR dataset to scientifically measure parsing recovery rates and false positives.
 - [ ] Conduct extended testing on larger DVR disk dump samples.
 - [ ] Final fallback submission buffer window if college SPOC delays login access.

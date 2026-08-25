@@ -8,7 +8,7 @@
 
 Once the disk image is safely loaded and write-block protected, Locus needs to determine t looks for an orpwhich company manufactured the DVR/NVR (e.g., Dahua, Hikvision, CP Plus) and how its custom file system is formatted.
 
-Locus automatically scans the initial physical sectors of the `.dd` file searching for hidden manufacturer "magic byte signatures" (like `DHAV` for Dahua or `HKFS` for Hikvision). Within 1 second, Locus identifies the manufacturer, partition boundaries, and camera channel count (e.g., 8 channels vs 16 channels), displaying the detected DVR profile on the UI so the correct carving engine is selected automatically.
+Locus automatically scans the initial physical sectors of the `.dd` file searching for hidden manufacturer "magic byte signatures" (like `DHAV` for Dahua or `HKFS` for Hikvision). It rapidly identifies the manufacturer, partition boundaries, and camera channel count (e.g., 8 channels vs 16 channels), displaying the detected DVR profile on the UI so the correct carving engine is selected automatically.
 
 ---
 

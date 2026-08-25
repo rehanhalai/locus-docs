@@ -22,7 +22,7 @@ The result is a set of clean, web-playable `.mp4` video clips that any standard 
 
 - **Raw DVR sectors are unplayable.** No media player on Earth can open a `.dd` disk image and play interleaved proprietary sector data.
 - **Recovers deleted footage.** Even if the DVR's file index table is wiped, the raw video frames still physically exist on the disk platters. Carving recovers them directly from the sectors, bypassing the file index entirely.
-- **Zero-Transcoding = Forensic Integrity.** Re-encoding the video (changing pixel data) would alter the file hash, making it inadmissible in court. Locus uses FFmpeg `stream copy` mode (`-c:v copy`) which simply moves the raw compressed bytes into a new container without touching the pixel data.
+- **Zero-Transcoding Preserves Original Video Bitstream:** Re-encoding the video (decompression and re-compression) causes generation loss and alters pixel data. Locus uses PyAV/FFmpeg `stream copy` mode (`-c:v copy`), which extracts the exact compressed NAL units bit-for-bit into the standard container without modifying any pixel data, maintaining provenance and original stream authenticity.
 
 ---
 

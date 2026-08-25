@@ -9,7 +9,7 @@
 **Locus** is built as a standalone desktop forensic application combining a native Electron window with a single embedded Python engine (`FastAPI`).
 
 - **Desktop Shell:** Electron (Node.js runtime + Chromium) providing native windowing, cross-platform UI rendering (Windows/Linux/macOS), OS file pickers, and child process management.
-- **Frontend UI:** React + TypeScript + Vite + Tailwind CSS / ShadcnUI (Investigator workspace, multi-camera playback, timeline matrix, court report generator).
+- **Frontend UI:** React + TypeScript + Vite + Tailwind CSS / ShadcnUI (Investigator workspace, multi-camera playback, timeline matrix, forensic report generator).
 - **Single Backend API:** FastAPI (Python 3.11+) running as an embedded background process handling binary sector carving, video stream decoding, and REST/WebSocket endpoints.
 - **Media & AI Engine:** PyAV + FFmpeg for raw stream remuxing and ONNX Runtime for lightweight YOLOv8 object/face/motion detection.
 - **Database:** Local SQLite 3 database file (`forensics.db`) for zero-configuration, instant case indexing.
@@ -97,5 +97,5 @@ locus/
 5. **Timeline Sync:** Normalizes camera timestamps onto a unified 60 Hz master clock bus.
 6. **AI Indexing:** ONNX Runtime processes extracted frames using YOLOv8, indexing detected objects with timestamps.
 7. **Evidence Search:** UI queries SQLite allowing investigators to filter via natural language parameters.
-8. **Hash Integrity:** Hashes re-verified at export to generate cryptographic audit sidecar (`.sync.json`).
+8. **Hash Integrity:** Cryptographic provenance sidecar (`.sync.json`) generated on clip export, with on-demand source hash verification.
 9. **UI & Reporting:** React frontend generates Forensic Evidence PDF report.

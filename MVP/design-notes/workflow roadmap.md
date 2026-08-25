@@ -7,4 +7,4 @@
 7. **Step 7: Timeline Normalization & Sync** (Aligning timestamps across multiple camera channels).
 8. **Step 8: AI-Assisted Analytics** (Running local object detection).
 9. **Step 9: Hash Verification & Chain of Custody Audit** (Ensuring evidence integrity prior to export).
-10. **Step 10: Forensic Report Generation** (Producing the court-admissible PDF).
+10. **Step 10: Forensic Report Generation** (Producing the Forensic Evidence PDF report).

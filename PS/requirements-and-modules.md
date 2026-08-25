@@ -13,7 +13,7 @@
 5. **Timeline Normalization:** Calibrates timestamp drift and aligns multi-camera channels onto a single synchronized timeline.
 6. **Integrity & Hashing:** Computes MD5 and SHA-256 hashes at ingestion, carving, and export stages with immutable audit logs.
 7. **AI & Computer Vision:** Runs YOLOv8 for object/person detection, face recognition, motion heatmaps, and event indexing.
-8. **Workspace & Reporting:** Multi-camera web video player, RBAC access control, and automated court-ready PDF/HTML report export.
+8. **Workspace & Reporting:** Multi-camera web video player, RBAC access control, and automated Forensic Evidence PDF/HTML report export.
 
 ---
 

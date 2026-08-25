@@ -26,7 +26,7 @@ Build a software platform providing:
 - **Timeline Normalization:** Synchronize timestamps across heterogeneous camera feeds into a linear timeline.
 - **Evidence Integrity:** Cryptographic SHA-256 and MD5 verification at all pipeline stages.
 - **AI Video Analytics:** Object detection (people, vehicles), face detection, motion heatmaps, and event indexing.
-- **Court-Ready Reporting:** Audit logs, hash comparison tables, and PDF evidence exports.
+- **Forensic Evidence Reporting:** Audit logs, hash comparison tables, and PDF evidence exports.
 
 ---
 
