@@ -14,28 +14,37 @@
 
 Modern CCTV and DVR/NVR systems from major manufacturers—such as **Dahua, CP Plus, Honeywell, HIKVISION, TP-Link, Godrej, Uniview, and Matrix**—use proprietary file systems, raw disk structures, non-standard container headers, and custom video stream encodings. During criminal investigations, forensic officers are forced to juggle multiple vendor-specific playback utilities, struggle with timestamp drift across cameras, face extreme difficulty in recovering deleted footage, and risk evidence contamination.
 
-**Locus** bridges this gap by offering a unified, vendor-agnostic software suite. It automates raw sector parsing, deleted video carving, multi-camera timeline synchronization, cryptographic evidence verification (`SHA-256` & `MD5`), and computer vision AI analytics—delivering legally defensible, court-ready forensic reports from a single desktop interface.
+**Locus** bridges this gap by offering a unified, vendor-agnostic software suite. It automates raw sector parsing, deleted video carving, multi-camera timeline synchronization, cryptographic evidence verification (`SHA-256` & `MD5`), and computer vision AI analytics—delivering forensic evidence reports from a single desktop interface.
 
 ---
 
 ## Key Features & Core Capabilities
 
-1. **Automated OEM & File System Identification**
-   - Automatically detects proprietary partition layouts, magic header signatures, and video codecs from raw disk dumps (`.dd`, `.raw`, `.E01`).
+1. **Physical Acquisition & Case Ingestion**
+   - Captures physical raw DVR disks via embedded `dc3dd` engine (requires physical hardware write-blocker and Administrator/Root privileges) or loads existing `.dd` forensic image files.
 
-2. **Sector-Level Video Carving & Deleted Recovery**
-   - Bypasses corrupted or missing file system indexes. Scans raw drive sectors to carve deleted, overwritten, or damaged H.264/H.265 video stream fragments.
+2. **Automated OEM & File System Identification**
+   - **2-Phase Validation:** Initially detects proprietary magic header signatures (`DHAV`, `HKFS`), followed by structural layout validation. Unrecognized structures are strictly flagged as `UNKNOWN`.
 
-3. **Multi-Camera Synchronized Master Timeline**
-   - Calibrates internal DVR clock drifts and synchronizes heterogeneous camera channels into a unified chronological master timeline with multi-grid web playback.
+3. **Sector Header Parsing & Mapping**
+   - Decodes proprietary 32-byte binary headers to construct a Master Sector Map of all interleaved camera channels.
 
-4. **Cryptographic Chain-of-Custody Integrity**
-   - Automatically calculates and verifies `SHA-256` and `MD5` hashes at disk ingestion, file carving, extraction, and report export—ensuring strict legal admissibility (ISO/IEC 27037 compliant).
+4. **Sector-Level Video Carving & Deleted Recovery**
+   - Bypasses corrupted or missing file systems. Scans raw drive sectors to carve deleted, fragmented, or damaged H.264/H.265 video using PyAV/FFmpeg zero-transcoding remuxing.
 
-5. **AI-Powered Computer Vision Analytics**
-   - Integrated YOLOv8 models process extracted frames to index detected targets (*people, vehicles, objects*), facial bounding boxes, and motion heatmaps—enabling instant timeline filter queries.
+5. **Multi-Camera Synchronized Master Timeline**
+   - Calibrates internal DVR clock drifts non-destructively. Original raw DVR timestamps are strictly preserved, while synchronizing heterogeneous camera channels into a unified chronological master timeline driven by a 60 Hz internal clock.
 
-6. **Court-Ready Forensic Reporting**
+6. **Local AI Video Analytics (ONNX Engine)**
+   - **Motion-Gated Pipeline:** Uses OpenCV MOG2 as a high-speed pre-filter to detect motion, ensuring the YOLOv8 model via ONNX Runtime only processes frames with actual activity. AI outputs include confidence scores and act as an investigative aid requiring human verification.
+
+7. **Evidence Search & Event Filtering**
+   - High-speed SQLite filtering allowing investigators to search specific AI detections across specific cameras in milliseconds.
+
+8. **Cryptographic Integrity & Audit Logging**
+   - Automatically calculates and verifies `SHA-256` and `MD5` hashes at disk ingestion, file carving, extraction, and report export—providing strict integrity, provenance, and processing history.
+
+9. **Forensic Evidence Reporting**
    - Generates audit-compliant PDF/HTML reports featuring execution logs, evidence hash parity tables, carved frame thumbnails, and investigator signatures.
 
 ---
@@ -45,26 +54,34 @@ Modern CCTV and DVR/NVR systems from major manufacturers—such as **Dahua, CP P
 Locus is built as a **monorepo standalone desktop application**, running a native Electron frontend wrapper powered by an embedded Python FastAPI engine.
 
 ```
-┌───────────────────────────────────────────────────────────┐
-│                    ELECTRON SHELL                         │
-│   ┌───────────────────────────────────────────────────┐   │
-│   │            REACT + SHADCN UI FRONTEND             │   │
-│   │   (Investigator Workspace, Timeline, Reports)     │   │
-│   └─────────────────────────┬─────────────────────────┘   │
-└─────────────────────────────┼─────────────────────────────┘
-                              │ HTTP REST / WebSockets (localhost:8000)
-                              ▼
-┌───────────────────────────────────────────────────────────┐
-│                 FASTAPI BACKEND (Python)                  │
-│   (Disk I/O, Sector Carving, Stream Processing, AI Jobs)  │
-└───────┬─────────────────────┬─────────────────────┬───────┘
-        │                     │                     │
-        ▼                     ▼                     ▼
-┌──────────────┐     ┌─────────────────┐   ┌────────────────┐
-│   SQLite     │     │ PyAV / FFmpeg   │   │  ONNX Runtime  │
-│(Local DB File│     │(Binary Carving &│   │ (YOLOv8 AI     │
-│  metadata)   │     │ Video Remuxing) │   │ Object Search) │
-└──────────────┘     └─────────────────┘   └────────────────┘
+┌───────────────────────────────────────────────────────────────────────────┐
+│                          LOCUS ELECTRON DESKTOP SHELL                     │
+│  ┌─────────────────────────────────────────────────────────────────────┐  │
+│  │                     REACT + SHADCN UI FRONTEND                      │  │
+│  │   (Case Intake, Feature Tabs, Video Grid, Timeline, PDF Export)     │  │
+│  └──────────────────────────────────┬──────────────────────────────────┘  │
+└─────────────────────────────────────┼─────────────────────────────────────┘
+                                      │ HTTP REST / WebSockets (localhost:8000)
+                                      ▼
+┌───────────────────────────────────────────────────────────────────────────┐
+│                      FASTAPI PYTHON BACKEND ENGINE                        │
+│                                                                           │
+│  ┌────────────────────────┐  ┌────────────────────────┐  ┌─────────────┐  │
+│  │ 01. Acquisition (dc3dd)│  │ 02. Device ID & Scanners│  │ 03. FS Parser│  │
+│  └────────────────────────┘  └────────────────────────┘  └─────────────┘  │
+│  ┌────────────────────────┐  ┌────────────────────────┐  ┌─────────────┐  │
+│  │ 04. Sector Carver      │  │ 05. Timeline Sync Bus  │  │ 06. ONNX AI │  │
+│  └────────────────────────┘  └────────────────────────┘  └─────────────┘  │
+│  ┌────────────────────────┐  ┌────────────────────────┐                   │
+│  │ 07. Evidence Search    │  │ 08. Hash Verification  │                   │
+│  └────────────────────────┘  └────────────────────────┘                   │
+└─────────────────────────────────────┬─────────────────────────────────────┘
+                                      │
+                                      ▼
+                           ┌─────────────────────┐
+                           │ SQLite Database     │
+                           │ (`forensics.db`)    │
+                           └─────────────────────┘
 ```
 
 | Layer | Technology | Role & Purpose |
@@ -96,5 +113,5 @@ Locus is built as a **monorepo standalone desktop application**, running a nativ
 
 1. **Cross-Platform Linux & Windows Compatibility:** While commercial tools are locked strictly to Windows, Locus runs natively on Linux (which NTRO and defense agencies prefer).
 2. **Zero-Configuration Desktop Executable:** Ships as a single `.exe` or `.AppImage`. No complex server setups or database installations required.
-3. **Integrated Computer Vision & Timeline Search:** Combines raw sector carving with instant natural language AI indexing (*"Find red car on Channel 2"*).
-4. **Lightweight ONNX AI Execution:** Runs fast on standard laptop CPUs without requiring expensive $2,000 gaming GPUs.
+3. **Integrated Computer Vision & Timeline Search:** Combines raw sector carving with instant natural language AI indexing (*"Find person on Channel 2"*).
+4. **Lightweight ONNX AI Execution:** Motion-gated architecture runs fast on standard laptop CPUs without requiring expensive $2,000 gaming GPUs.

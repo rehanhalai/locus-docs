@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MVP/MVP.md",
+                "file": "architecture-and-tech-stack.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "MVP"
+              "title": "architecture-and-tech-stack"
             }
           }
         ]
@@ -191,17 +191,23 @@
   },
   "active": "d9f1d7617b7f0abd",
   "lastOpenFiles": [
-    "MVP/features/evidence-hashing/evidence-hashing.md",
+    "project-overview.md",
+    "scope-and-goals.md",
+    "locus.md",
+    "PS/official-problem-statement.md",
+    "MVP/features/disk-imaging/disk-imaging.md",
+    "MVP/design-notes/02-mvp-scope-and-ingestion.md",
+    "MVP/design-notes/03-acquisition-and-imaging.md",
+    "MVP/design-notes/01-acquisition-and-parsing.md",
     "MVP/MVP.md",
+    "MVP/features/evidence-hashing/evidence-hashing.md",
     "MVP/features/evidence-search/evidence-search.md",
     "MVP/features/ai-analytics/ai-analytics.md",
     "MVP/features/timeline-sync/timeline-sync.md",
     "MVP/features/video-carving/video-carving.md",
     "MVP/features/filesystem-parsing/filesystem-parsing.md",
     "MVP/features/device-identification/device-identification.md",
-    "locus.md",
     "Projects/locus/MVP/MVP.md",
-    "MVP/features/disk-imaging/disk-imaging.md",
     "Projects/locus/MVP.md",
     "MVP/design-notes/20-hash-verification-and-export.md",
     "MVP/features/evidence-hashing",
@@ -219,12 +225,6 @@
     "MVP/design-notes/17-gop-nal-units-and-remuxing-explained.md",
     "MVP/design-notes/00-MASTER-PROJECT-STATUS.md",
     "MVP/visual.md",
-    "Welcome.md",
-    "scope-and-goals.md",
-    "reverse-engineering/05-onnx-and-ai-pipeline.md",
-    "reverse-engineering/04-forensics-and-hashing.md",
-    "reverse-engineering/03-video-processing-and-ai.md",
-    "reverse-engineering/02-parsing-and-carving.md",
     "reverse-engineering",
     "PS"
   ]

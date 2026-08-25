@@ -34,7 +34,8 @@
 
 ### Phase 2: Aug 31 – Sept 6 (Core MVP: Carving Engine & UI Dashboard)
 
-- [ ] **Python Carving & Stream Remuxing**
+- [ ] **Python Acquisition, Carving & Remuxing**
+  - [ ] Integrate `dc3dd` subprocess for live physical drive acquisition with bad-sector zero-padding.
   - [ ] Implement read-only file handler (`open(filepath, 'rb')`) with baseline SHA-256 & MD5 hash calculation on ingestion.
   - [ ] Build Dahua (`DHAV` magic header) sector scanner to identify frame boundaries and raw timestamps.
   - [ ] Build Hikvision sector scanner pattern matching logic for proprietary headers.

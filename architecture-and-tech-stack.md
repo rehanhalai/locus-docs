@@ -15,26 +15,34 @@
 - **Database:** Local SQLite 3 database file (`forensics.db`) for zero-configuration, instant case indexing.
 
 ```
-┌───────────────────────────────────────────────────────────┐
-│                    ELECTRON SHELL                         │
-│   ┌───────────────────────────────────────────────────┐   │
-│   │            REACT + SHADCN UI FRONTEND             │   │
-│   │   (Investigator Workspace, Timeline, Reports)     │   │
-│   └─────────────────────────┬─────────────────────────┘   │
-└─────────────────────────────┼─────────────────────────────┘
-                              │ HTTP REST / WebSockets (localhost:8000)
-                              ▼
-┌───────────────────────────────────────────────────────────┐
-│                 FASTAPI BACKEND (Python)                  │
-│   (Disk I/O, Sector Carving, Stream Processing, AI Jobs)  │
-└───────┬─────────────────────┬─────────────────────┬───────┘
-        │                     │                     │
-        ▼                     ▼                     ▼
-┌──────────────┐     ┌─────────────────┐   ┌────────────────┐
-│   SQLite     │     │ PyAV / FFmpeg   │   │  ONNX Runtime  │
-│(Local DB File│     │(Binary Carving &│   │ (YOLOv8 AI     │
-│  metadata)   │     │ Video Remuxing) │   │ Object Search) │
-└──────────────┘     └─────────────────┘   └────────────────┘
+┌───────────────────────────────────────────────────────────────────────────┐
+│                          LOCUS ELECTRON DESKTOP SHELL                     │
+│  ┌─────────────────────────────────────────────────────────────────────┐  │
+│  │                     REACT + SHADCN UI FRONTEND                      │  │
+│  │   (Case Intake, Feature Tabs, Video Grid, Timeline, PDF Export)     │  │
+│  └──────────────────────────────────┬──────────────────────────────────┘  │
+└─────────────────────────────────────┼─────────────────────────────────────┘
+                                      │ HTTP REST / WebSockets (localhost:8000)
+                                      ▼
+┌───────────────────────────────────────────────────────────────────────────┐
+│                      FASTAPI PYTHON BACKEND ENGINE                        │
+│                                                                           │
+│  ┌────────────────────────┐  ┌────────────────────────┐  ┌─────────────┐  │
+│  │ 01. Acquisition (dc3dd)│  │ 02. Device ID & Scanners│  │ 03. FS Parser│  │
+│  └────────────────────────┘  └────────────────────────┘  └─────────────┘  │
+│  ┌────────────────────────┐  ┌────────────────────────┐  ┌─────────────┐  │
+│  │ 04. Sector Carver      │  │ 05. Timeline Sync Bus  │  │ 06. ONNX AI │  │
+│  └────────────────────────┘  └────────────────────────┘  └─────────────┘  │
+│  ┌────────────────────────┐  ┌────────────────────────┐                   │
+│  │ 07. Evidence Search    │  │ 08. Hash Verification  │                   │
+│  └────────────────────────┘  └────────────────────────┘                   │
+└─────────────────────────────────────┬─────────────────────────────────────┘
+                                      │
+                                      ▼
+                           ┌─────────────────────┐
+                           │ SQLite Database     │
+                           │ (`forensics.db`)    │
+                           └─────────────────────┘
 ```
 
 ---
@@ -43,6 +51,7 @@
 
 | Component             | Technology                | Purpose                                                                          |
 | :-------------------- | :------------------------ | :------------------------------------------------------------------------------- |
+| **Disk Acquisition**  | `dc3dd` Engine            | Live physical bit-stream cloning, bad sector defense, and on-the-fly hashing     |
 | **Desktop Wrapper**   | Electron                  | Standalone desktop container, cross-platform Chromium rendering, OS file dialogs |
 | **Frontend UI**       | React + TypeScript + Vite | Dashboard UI, multi-camera timeline player, evidence tables, report preview      |
 | **UI Styling**        | Tailwind CSS + ShadcnUI   | Professional dark-mode design system & components                                |
@@ -61,7 +70,7 @@
 | **OS** | Windows 10/11 (64-bit) / Ubuntu 20.04+ / macOS 11+ | Windows 11 (64-bit) / Ubuntu 22.04 LTS |
 | **CPU** | Quad-core Intel Core i5 / AMD Ryzen 5 / Apple M1 | 8-core Intel i7/i9 or AMD Ryzen 7/9 |
 | **RAM** | 8 GB RAM (4 GB free memory) | 16 GB – 32 GB RAM |
-| **Storage** | 5 GB free SSD space | High-speed NVMe SSD (100 GB+ free space) |
+| **Storage** | 5 GB free SSD space *(Note: For MVP `.dd` file ingestion, host must have free space > drive size)* | High-speed NVMe SSD (100 GB+ free space) |
 | **GPU** | Integrated Graphics (CPU execution via ONNX Runtime) | NVIDIA GTX 1660 / RTX 3060+ (CUDA Accelerated) |
 
 ---
@@ -81,8 +90,12 @@ locus/
 
 ## Processing Pipeline
 
-1. **Ingestion & Hashing:** User selects raw disk image (`.dd`) via native desktop file picker → FastAPI calculates SHA-256 / MD5 baseline hash.
-2. **Parsing & Carving:** Background FastAPI thread reads sector blocks, matches OEM headers (Dahua `DHAV`, Hikvision raw layouts), and carves video streams.
-3. **Stream Remuxing:** PyAV / FFmpeg remuxes raw carved video frames into web-playable `.mp4` files without altering original evidence.
-4. **AI Indexing:** ONNX Runtime processes extracted frames using YOLOv8, indexing detected objects/faces with timestamps in SQLite.
-5. **UI Rendering:** React frontend receives WebSocket updates, populating the multi-camera timeline player with AI search tags and court-ready PDF reports.
+1. **Acquisition & Intake:** `dc3dd` clones physical drive or investigator loads `.dd` image → Baseline SHA-256/MD5 hashes generated.
+2. **Identification:** Scans disk for OEM magic signatures (Dahua `DHAV`, Hikvision).
+3. **Sector Mapping:** Unpacks proprietary binary headers to build a Master Sector Map in SQLite.
+4. **Carving & Remuxing:** Background FastAPI thread reads sector blocks and uses PyAV/FFmpeg to remux raw video to `.mp4` using zero-transcoding.
+5. **Timeline Sync:** Normalizes camera timestamps onto a unified 60 Hz master clock bus.
+6. **AI Indexing:** ONNX Runtime processes extracted frames using YOLOv8, indexing detected objects with timestamps.
+7. **Evidence Search:** UI queries SQLite allowing investigators to filter via natural language parameters.
+8. **Hash Integrity:** Hashes re-verified at export to generate cryptographic audit sidecar (`.sync.json`).
+9. **UI & Reporting:** React frontend generates Forensic Evidence PDF report.
