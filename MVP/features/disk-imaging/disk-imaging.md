@@ -173,13 +173,13 @@ sequenceDiagram
 ## Technical Specifications & APIs
 
 - **Folder Location:** `Projects/locus/MVP/features/disk-imaging/`
-- **Python Module:** `app.carving.acquisition`
-- **FastAPI Endpoints:**
-  - `POST /api/acquire/physical` — Start live physical disk acquisition via `dc3dd`
-  - `POST /api/ingest/image` — Ingest pre-existing `.dd`/`.raw` image
-  - `GET /api/devices/list` — List available physical block devices for selection
-- **Sample Physical Acquisition Request Payload:**
-  ```json
+	- **Python Module:** `app.carving.acquisition`
+	- **FastAPI Endpoints:**
+	  - `POST /api/acquire/physical` — Start live physical disk acquisition via `dc3dd`
+	  - `POST /api/ingest/image` — Ingest pre-existing `.dd`/`.raw` image
+	  - `GET /api/devices/list` — List available physical block devices for selection
+	- **Sample Physical Acquisition Request Payload:**
+	  ```json
   {
     "case_id": "case_101",
     "investigator_name": "Officer Sharma",
