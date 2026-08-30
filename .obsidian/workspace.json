@@ -4,21 +4,19 @@
     "type": "split",
     "children": [
       {
-        "id": "75c8f57d0c1cc0ec",
+        "id": "534a2be4d951a873",
         "type": "tabs",
         "children": [
           {
-            "id": "03e124d32779eb45",
+            "id": "b15d040b573766ba",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "excalidraw",
               "state": {
-                "file": "MVP/development/flow-08-cryptographic-verification-and-export.md",
-                "mode": "source",
-                "source": false
+                "file": "MVP/development/frontend/layout design.md"
               },
-              "icon": "lucide-file",
-              "title": "flow-08-cryptographic-verification-and-export"
+              "icon": "excalidraw-icon",
+              "title": "layout design"
             }
           }
         ]
@@ -189,22 +187,25 @@
       "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "03e124d32779eb45",
+  "active": "b15d040b573766ba",
   "lastOpenFiles": [
-    "MVP/development/flow-09-forensic-pdf-reporting.md",
-    "MVP/development/flow-06-ai-video-analytics.md",
-    "MVP/development/flow-05-multi-camera-timeline-sync.md",
+    "MVP/development/backend/flow-01-acquisition-and-ingestion.md",
+    "MVP/development/frontend/layout design.md",
+    "MVP/development/backend/flow-08-cryptographic-verification-and-export.md",
+    "MVP/development/backend/01-acquisition-and-dc3dd-setup.md",
+    "MVP/development/backend",
+    "MVP/development/frontend",
+    "MVP/development/backend/flow-09-forensic-pdf-reporting.md",
+    "MVP/development/backend/flow-06-ai-video-analytics.md",
+    "MVP/development/backend/flow-05-multi-camera-timeline-sync.md",
     "on-boarding/04-developer-workflow-and-reading-guide.md",
     "on-boarding/03-architecture-and-tech-stack.md",
-    "MVP/development/flow-08-cryptographic-verification-and-export.md",
     "on-boarding/02-core-features-and-analogies.md",
     "on-boarding/01-welcome-and-problem-statement.md",
     "on-boarding",
-    "MVP/development/flow-04-video-carving-and-remuxing.md",
-    "MVP/development/flow-03-sector-header-parsing.md",
-    "MVP/development/flow-02-device-identification.md",
-    "MVP/development/flow-01-acquisition-and-ingestion.md",
-    "MVP/development/01-acquisition-and-dc3dd-setup.md",
+    "MVP/development/backend/flow-04-video-carving-and-remuxing.md",
+    "MVP/development/backend/flow-03-sector-header-parsing.md",
+    "MVP/development/backend/flow-02-device-identification.md",
     "MVP/design-notes/10-signature-reality-and-two-tier-detection.md",
     "deliverables-and-roadmap.md",
     "MVP/development/code_snapshot/uv.lock",
@@ -214,8 +215,6 @@
     "MVP/development/code_snapshot/tests/__pycache__/conftest.cpython-314-pytest-9.1.1.pyc",
     "MVP/development/code_snapshot/tests/test_cases.py",
     "MVP/development/code_snapshot/tests/test_acquisition.py",
-    "MVP/development/code_snapshot/tests/conftest.py",
-    "MVP/development/code_snapshot/tests/__pycache__",
     "MVP/development/code_snapshot/README.md",
     "MVP/features/ai-analytics/ai-analytics.md",
     "MVP/features/disk-imaging/disk-imaging.md",
@@ -225,7 +224,6 @@
     "Projects/locus/MVP.md",
     "Projects/locus/MVP/MVP.md",
     "locus.md",
-    "PS/problem-statement.md",
-    "PS/official-problem-statement.md"
+    "PS/problem-statement.md"
   ]
 }

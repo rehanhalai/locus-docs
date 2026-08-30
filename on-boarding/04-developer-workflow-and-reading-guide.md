@@ -86,8 +86,8 @@ To build deep mastery of the low-level binary specifications, read the documenta
 | **2** | [02-core-features-and-analogies.md](./02-core-features-and-analogies.md) | The 8 core features explained via simple real-world analogies |
 | **3** | [03-architecture-and-tech-stack.md](./03-architecture-and-tech-stack.md) | System architecture & technology selection rationale |
 | **4** | [MVP/MVP.md](../MVP/MVP.md) | The complete MVP functional specification index |
-| **5** | [MVP/development/01-acquisition-and-dc3dd-setup.md](../MVP/development/01-acquisition-and-dc3dd-setup.md) | Why we bundle static binaries for disk imaging |
-| **6** | [MVP/development/flow-02-device-identification.md](../MVP/development/flow-02-device-identification.md) | Step-by-step device and filesystem discovery |
+| **5** | [MVP/development/01-acquisition-and-dc3dd-setup.md](01-acquisition-and-dc3dd-setup.md) | Why we bundle static binaries for disk imaging |
+| **6** | [MVP/development/flow-02-device-identification.md](flow-02-device-identification.md) | Step-by-step device and filesystem discovery |
 | **7** | [MVP/design-notes/14-detailed-vendor-signatures-and-phases.md](../MVP/design-notes/14-detailed-vendor-signatures-and-phases.md) | Deep breakdown of Dahua (`DHAV`), Hikvision (`HKFS`), and H.264 NAL units |
 | **8** | [MVP/design-notes/18-timeline-synchronization-and-alignment.md](../MVP/design-notes/18-timeline-synchronization-and-alignment.md) | Math behind time offsets ($\Delta t$) and the 60 Hz master clock bus |
 
