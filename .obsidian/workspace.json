@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "on-boarding/04-developer-workflow-and-reading-guide.md",
+                "file": "MVP/development/flow-08-cryptographic-verification-and-export.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "04-developer-workflow-and-reading-guide"
+              "title": "flow-08-cryptographic-verification-and-export"
             }
           }
         ]
@@ -191,11 +191,14 @@
   },
   "active": "03e124d32779eb45",
   "lastOpenFiles": [
-    "on-boarding/03-architecture-and-tech-stack.md",
-    "on-boarding/02-core-features-and-analogies.md",
-    "on-boarding/01-welcome-and-problem-statement.md",
+    "MVP/development/flow-09-forensic-pdf-reporting.md",
+    "MVP/development/flow-06-ai-video-analytics.md",
     "MVP/development/flow-05-multi-camera-timeline-sync.md",
     "on-boarding/04-developer-workflow-and-reading-guide.md",
+    "on-boarding/03-architecture-and-tech-stack.md",
+    "MVP/development/flow-08-cryptographic-verification-and-export.md",
+    "on-boarding/02-core-features-and-analogies.md",
+    "on-boarding/01-welcome-and-problem-statement.md",
     "on-boarding",
     "MVP/development/flow-04-video-carving-and-remuxing.md",
     "MVP/development/flow-03-sector-header-parsing.md",
@@ -223,9 +226,6 @@
     "Projects/locus/MVP/MVP.md",
     "locus.md",
     "PS/problem-statement.md",
-    "PS/official-problem-statement.md",
-    "architecture-and-tech-stack.md",
-    "project-overview.md",
-    "scope-and-goals.md"
+    "PS/official-problem-statement.md"
   ]
 }
