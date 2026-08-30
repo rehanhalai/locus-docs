@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "a43b0a9f8494ab4f",
+        "id": "75c8f57d0c1cc0ec",
         "type": "tabs",
         "children": [
           {
-            "id": "d9f1d7617b7f0abd",
+            "id": "03e124d32779eb45",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MVP/features/disk-imaging/disk-imaging.md",
+                "file": "on-boarding/04-developer-workflow-and-reading-guide.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "disk-imaging"
+              "title": "04-developer-workflow-and-reading-guide"
             }
           }
         ]
@@ -189,12 +189,34 @@
       "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "d9f1d7617b7f0abd",
+  "active": "03e124d32779eb45",
   "lastOpenFiles": [
+    "on-boarding/03-architecture-and-tech-stack.md",
+    "on-boarding/02-core-features-and-analogies.md",
+    "on-boarding/01-welcome-and-problem-statement.md",
+    "MVP/development/flow-05-multi-camera-timeline-sync.md",
+    "on-boarding/04-developer-workflow-and-reading-guide.md",
+    "on-boarding",
+    "MVP/development/flow-04-video-carving-and-remuxing.md",
+    "MVP/development/flow-03-sector-header-parsing.md",
+    "MVP/development/flow-02-device-identification.md",
+    "MVP/development/flow-01-acquisition-and-ingestion.md",
     "MVP/development/01-acquisition-and-dc3dd-setup.md",
-    "MVP/features/disk-imaging/acquisition canvas.md",
-    "MVP/development",
+    "MVP/design-notes/10-signature-reality-and-two-tier-detection.md",
+    "deliverables-and-roadmap.md",
+    "MVP/development/code_snapshot/uv.lock",
+    "MVP/development/code_snapshot/tests/__pycache__/test_cases.cpython-314-pytest-9.1.1.pyc",
+    "MVP/development/code_snapshot/tests/__pycache__/test_acquisition_unit.cpython-314-pytest-9.1.1.pyc",
+    "MVP/development/code_snapshot/tests/__pycache__/test_acquisition.cpython-314-pytest-9.1.1.pyc",
+    "MVP/development/code_snapshot/tests/__pycache__/conftest.cpython-314-pytest-9.1.1.pyc",
+    "MVP/development/code_snapshot/tests/test_cases.py",
+    "MVP/development/code_snapshot/tests/test_acquisition.py",
+    "MVP/development/code_snapshot/tests/conftest.py",
+    "MVP/development/code_snapshot/tests/__pycache__",
+    "MVP/development/code_snapshot/README.md",
+    "MVP/features/ai-analytics/ai-analytics.md",
     "MVP/features/disk-imaging/disk-imaging.md",
+    "MVP/features/disk-imaging/acquisition canvas.md",
     "MVP/MVP.md",
     "MVP/visual.md",
     "Projects/locus/MVP.md",
@@ -204,28 +226,6 @@
     "PS/official-problem-statement.md",
     "architecture-and-tech-stack.md",
     "project-overview.md",
-    "scope-and-goals.md",
-    "MVP/design-notes/02-mvp-scope-and-ingestion.md",
-    "MVP/design-notes/03-acquisition-and-imaging.md",
-    "MVP/design-notes/01-acquisition-and-parsing.md",
-    "MVP/features/evidence-hashing/evidence-hashing.md",
-    "MVP/features/evidence-search/evidence-search.md",
-    "MVP/features/ai-analytics/ai-analytics.md",
-    "MVP/features/timeline-sync/timeline-sync.md",
-    "MVP/features/video-carving/video-carving.md",
-    "MVP/features/filesystem-parsing/filesystem-parsing.md",
-    "MVP/features/device-identification/device-identification.md",
-    "MVP/design-notes/20-hash-verification-and-export.md",
-    "MVP/features/evidence-hashing",
-    "MVP/features/evidence-search",
-    "MVP/features/ai-analytics",
-    "MVP/features/timeline-sync",
-    "MVP/features/video-carving",
-    "MVP/design-notes/19-ai-analytics-and-motion.md",
-    "MVP/design-notes/14-detailed-vendor-signatures-and-phases.md",
-    "Projects/locus/MVP",
-    "Projects/locus",
-    "Projects",
-    "reverse-engineering"
+    "scope-and-goals.md"
   ]
 }

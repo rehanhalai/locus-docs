@@ -179,7 +179,7 @@ sequenceDiagram
 	  - `POST /api/ingest/image` — Ingest pre-existing `.dd`/`.raw` image
 	  - `GET /api/devices/list` — List available physical block devices for selection
 	- **Sample Physical Acquisition Request Payload:**
-	  ```json
+```json
   {
     "case_id": "case_101",
     "investigator_name": "Officer Sharma",
@@ -189,6 +189,7 @@ sequenceDiagram
   }
   ```
 - **Sample Physical Acquisition Response Payload:**
+
   ```json
   {
     "status": "completed",
@@ -201,10 +202,9 @@ sequenceDiagram
     "log_file": "/cases/CASE_101/acquisition.log",
     "write_block_verified": true
   }
-  ```
+```
 
 ---
-
 ## Plain English Summary
 
 **The Clone & Fingerprint Analogy:** 
