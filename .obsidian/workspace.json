@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "534a2be4d951a873",
+        "id": "e4d587a85cb99f6a",
         "type": "tabs",
         "children": [
           {
-            "id": "b15d040b573766ba",
+            "id": "0f29ca8c24f840b0",
             "type": "leaf",
             "state": {
               "type": "excalidraw",
@@ -187,10 +187,22 @@
       "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "b15d040b573766ba",
+  "active": "0f29ca8c24f840b0",
   "lastOpenFiles": [
-    "MVP/development/backend/flow-01-acquisition-and-ingestion.md",
     "MVP/development/frontend/layout design.md",
+    "MVP/features/disk-imaging/acquisition canvas.md",
+    "MVP/features/disk-imaging/disk-imaging.md",
+    "MVP/visual.md",
+    "MVP/MVP.md",
+    "MVP/design-notes/18-timeline-synchronization-and-alignment.md",
+    "MVP/design-notes/16-video-carving-and-remuxing.md",
+    "MVP/design-notes/15-sector-metadata-and-header-parsing.md",
+    "MVP/design-notes/13-dahua-cpplus-unified-engine.md",
+    "on-boarding/02-core-features-and-analogies.md",
+    "on-boarding/01-welcome-and-problem-statement.md",
+    "on-boarding/04-developer-workflow-and-reading-guide.md",
+    "on-boarding/03-architecture-and-tech-stack.md",
+    "MVP/development/backend/flow-01-acquisition-and-ingestion.md",
     "MVP/development/backend/flow-08-cryptographic-verification-and-export.md",
     "MVP/development/backend/01-acquisition-and-dc3dd-setup.md",
     "MVP/development/backend",
@@ -198,10 +210,6 @@
     "MVP/development/backend/flow-09-forensic-pdf-reporting.md",
     "MVP/development/backend/flow-06-ai-video-analytics.md",
     "MVP/development/backend/flow-05-multi-camera-timeline-sync.md",
-    "on-boarding/04-developer-workflow-and-reading-guide.md",
-    "on-boarding/03-architecture-and-tech-stack.md",
-    "on-boarding/02-core-features-and-analogies.md",
-    "on-boarding/01-welcome-and-problem-statement.md",
     "on-boarding",
     "MVP/development/backend/flow-04-video-carving-and-remuxing.md",
     "MVP/development/backend/flow-03-sector-header-parsing.md",
@@ -216,14 +224,6 @@
     "MVP/development/code_snapshot/tests/test_cases.py",
     "MVP/development/code_snapshot/tests/test_acquisition.py",
     "MVP/development/code_snapshot/README.md",
-    "MVP/features/ai-analytics/ai-analytics.md",
-    "MVP/features/disk-imaging/disk-imaging.md",
-    "MVP/features/disk-imaging/acquisition canvas.md",
-    "MVP/MVP.md",
-    "MVP/visual.md",
-    "Projects/locus/MVP.md",
-    "Projects/locus/MVP/MVP.md",
-    "locus.md",
-    "PS/problem-statement.md"
+    "MVP/features/ai-analytics/ai-analytics.md"
   ]
 }
