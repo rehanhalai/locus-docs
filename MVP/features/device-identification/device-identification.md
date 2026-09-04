@@ -30,6 +30,12 @@ Locus automatically scans the initial physical sectors of the `.dd` file searchi
 | `channel_count` | `INTEGER` | `8`                  | Number of recorded camera channels |
 | `sector_size`   | `INTEGER` | `512`                | Sector block size in bytes         |
 | `confidence`    | `REAL`    | `0.99`               | Identification confidence score    |
+| `is_cloud_nvr`  | `BOOLEAN` | `TRUE`               | Whether recorder uses cloud storage|
+| `cloud_ecosystem`| `TEXT`   | `"Hik-Connect"`      | Detected cloud service platform    |
+
+### Cloud-Recording NVR Defense
+When Locus matches signatures associated with cloud-recording models (e.g. Hikvision DS-76xxNI with Hik-Connect, CP Plus iCloud, EZVIZ), it alerts the examiner:
+> *⚠️ "Cloud NVR Profile Detected: On-premise disk operates as a sparse temporary cache (motion clips only). Continuous master video resides in vendor cloud data center. Immediately serve BNSS Section 94 Production Notice to Vendor's Indian Nodal Officer."*
 
 ---
 

@@ -14,6 +14,14 @@ When a forensic officer starts a new case, they have physical evidence that need
 2. **Path B: Pre-Existing Forensic Image Ingestion**
    If a forensic image has already been created (e.g., received as a `.dd` or `.raw` file on a thumb drive), the investigator simply browses and selects the file. Locus locks the file in **strict Read-Only mode** and streams the bytes through dual hash algorithms to freeze the baseline state.
 
+3. **Path C: Cloud Evidence Return Package Ingestion (BNSS Section 94)**
+   For modern cloud-backed NVRs where the local HDD is only a sparse cache, Locus ingests vendor-produced cloud evidence packages (continuous MP4 streams + XML export manifests) produced by vendor Nodal Officers in response to a BNSS Section 94 notice.
+
+### Pre-Acquisition Diagnostic: Ring Buffer Retention Estimator
+Before spending hours imaging a drive, Locus provides an instant mathematical feasibility check to verify if the crime date falls within the physical circular overwrite window:
+$$\text{Retention (Days)} \approx \frac{\text{Drive Capacity (GB)}}{\text{Active Channels} \times \text{Bitrate (Mbps)} \times 10.8}$$
+*Example:* A 4 TB (4000 GB) DVR recording 16 cameras at 4 Mbps wraps in $\approx 5.8\text{ days}$. If police seize the drive on Day 12, Locus alerts the investigator: *⚠️ "Warning: Disk geometry indicates circular buffer wrapped ~2.1 times since the incident date. Local footage is likely physically overwritten. Issue BNSS Section 94 Notice to Cloud Provider if Cloud NVR."*
+
 ---
 
 ## The Open-Source Acquisition Engine (`dc3dd`)

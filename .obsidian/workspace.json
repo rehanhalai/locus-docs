@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MVP/features/forensic-reporting/forensic-reporting.md",
+                "file": "post-mvp-forensic-flow.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "forensic-reporting"
+              "title": "post-mvp-forensic-flow"
             }
           }
         ]
@@ -191,18 +191,19 @@
   },
   "active": "d6fa56884306088b",
   "lastOpenFiles": [
+    "project-overview.md",
+    "post-mvp-forensic-flow.md",
+    "MVP/MVP.md",
+    "MVP/features/forensic-reporting/forensic-reporting.md",
     "MVP/features/timeline-sync/timeline-sync.md",
     "MVP/features/README.md",
     "MVP/design-notes/01-acquisition-and-parsing.md",
-    "MVP/features/forensic-reporting/forensic-reporting.md",
     "MVP/features/forensic-reporting",
     "MVP/design-notes/README.md",
     "MVP/features/ai-analytics/ai-analytics.md",
-    "MVP/MVP.md",
     "MVP/design-notes/22-forensic-reality-check-and-mvp-fumbles.md",
     "resources/nist-cfreds-datasets.md",
     "locus.md",
-    "project-overview.md",
     "scope-and-goals.md",
     "deliverables-and-roadmap.md",
     "MVP/visual.md",
@@ -217,7 +218,6 @@
     "MVP/design-notes/16-video-carving-and-remuxing.md",
     "MVP/design-notes/15-sector-metadata-and-header-parsing.md",
     "MVP/design-notes/13-dahua-cpplus-unified-engine.md",
-    "on-boarding/02-core-features-and-analogies.md",
     "MVP/development/backend",
     "MVP/development/frontend",
     "on-boarding",

@@ -6,7 +6,7 @@
 
 ## MVP Overview
 
-The **Locus MVP** is structured into **8 core backend feature specifications** (+ 1 deferred reporting module), mapping directly to the official PS 26150 requirements. Each feature contains the explanation and technical architecture of the MVP.
+The **Locus MVP** is structured into **9 core feature specifications**, mapping directly to the official PS 26150 requirements and Indian statutory admissibility mandates (BSA 2023). Each feature contains the complete technical architecture and execution flow of the MVP.
 
 ---
 

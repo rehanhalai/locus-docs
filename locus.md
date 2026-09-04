@@ -14,7 +14,8 @@
 ## Navigation
 
 - [[on-boarding/01-welcome-and-problem-statement|New Member Onboarding]] — **Team Onboarding & Plain-English Feature Guide**
-- [[MVP/MVP|MVP]] — **MVP Architecture & Feature Specifications** (Core Features 01–08 + 09 Deferred)
+- [[MVP/MVP|MVP]] — **MVP Architecture & Feature Specifications** (Core Features 01–09)
+- [[post-mvp-forensic-flow|Post-MVP Forensic Flow & Enterprise Roadmap]] — **The 12-Stage Standard Forensic Lifecycle & SIH Pitch Guide**
 - [[project-overview]] — Complete Project Overview & Executive Summary (Shareable Markdown)
 - [project-overview.pdf](file:///home/rehanhalai/code/rehanhalai/Projects/locus/project-overview.pdf) — Exported PDF Document (Ready for Sharing)
 - [[official-problem-statement]] — Complete, unedited official text of PS 26150

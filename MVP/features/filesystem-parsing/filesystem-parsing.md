@@ -67,6 +67,18 @@ This Master Sector Map tells Stage 4: *"Sectors 100, 103, 108 belong to Camera 1
 | `frame_type` | `TEXT` | `"I-FRAME"` | Keyframe vs Delta frame |
 | `payload_len` | `INTEGER` | `65536` | Video payload size in bytes |
 
+### System Event Log Parsing (`system_event_logs`)
+Beyond video frame headers, DVR filesystems reserve dedicated sectors for **System Event Logs** (e.g., Dahua `DHAV_LOG`, Hikvision log blocks). Locus unpacks these binary log entries into SQLite to distinguish between natural motion voids and deliberate footage deletion (*Tomaso Bruno v State of UP*):
+
+| Field Name | Data Type | Sample Value | Purpose |
+| :--- | :--- | :--- | :--- |
+| `log_id` | `INTEGER` (PK) | `501` | Log record identifier |
+| `evidence_id` | `TEXT` (FK) | `"ev_101"` | Parent evidence image |
+| `event_type` | `TEXT` | `"MOTION_START"` | Event (`MOTION_START`, `MOTION_STOP`, `POWER_OFF`, `TAMPER_ALARM`) |
+| `channel_id` | `INTEGER` | `1` | Associated camera channel (or 0 for system) |
+| `timestamp_epoch` | `INTEGER` | `1718901200` | Logged event timestamp |
+| `details` | `TEXT` | `"Motion threshold exceeded area [1]"` | Diagnostic metadata |
+
 ---
 
 ## Step-by-Step Data Flow Pipeline

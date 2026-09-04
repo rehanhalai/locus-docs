@@ -44,8 +44,8 @@ Modern CCTV and DVR/NVR systems from major manufacturers—such as **Dahua, CP P
 8. **Cryptographic Integrity & Audit Logging**
    - Automatically calculates and verifies `SHA-256` and `MD5` hashes at disk ingestion, file carving, extraction, and report export—providing strict integrity, provenance, and processing history.
 
-9. **Forensic Evidence Reporting**
-   - Generates audit-compliant PDF/HTML reports featuring execution logs, evidence hash parity tables, carved frame thumbnails, and investigator signatures.
+9. **Forensic Evidence Reporting & Statutory Admissibility (BSA 2023 Section 63)**
+   - Generates court-ready PDF packages featuring execution logs, evidence hash parity tables, carved frame thumbnails, statutory **BSA 2023 Section 63 Admissibility Certificates**, and itemized **Numbered I-Frame Stills (PNG + SHA-256)** for charge sheet annexures.
 
 ---
 
