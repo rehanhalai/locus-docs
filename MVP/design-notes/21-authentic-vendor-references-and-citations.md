@@ -9,7 +9,10 @@
 Dahua and CP PLUS utilize the proprietary **DHFS** (Dahua File System) and wrap individual frames in **DHAV** 32-byte binary envelopes.
 
 ### Published Research & Reverse-Engineering Sources:
-1. **Academic Paper:** *"Forensic Video Recovery from Multi-Channel Analog DVR Systems"* (MDPI Journal of Forensic Sciences / Digital Investigation).
+1. **Academic Paper (2025):** *"Automated Forensic Recovery Methodology for Video Evidence from Hikvision and Dahua DVR/NVR Systems"* (MDPI *Information*, 16(11), 983). [DOI: 10.3390/info16110983](https://www.mdpi.com/2078-2489/16/11/983)
+   - Authors: L. Rzayeva, M. Shayakhmetov, Y. Atanbayev, R. Budenov, H. Mutaher.
+   - Core concepts: Adaptive temporal sequencing, dual-signature header-footer validation (`DHAV`...`dhav`), automated manufacturer identification (91.8% recovery rate on 27 surveillance drives).
+2. **Academic Paper:** *"Forensic Video Recovery from Multi-Channel Analog DVR Systems"* (MDPI Journal of Forensic Sciences / Digital Investigation).
    - Details the 32-byte `DHAV` frame header structure: magic `0x44484156`, 1-byte channel ID, 1-byte frame type (`0xFD` I-Frame, `0xFC` P-Frame), 4-byte payload size, bit-packed timestamp, and `0x64686176` (`dhav`) footer.
 2. **X-Ways Forensics X-Tension:** [dw2102/DHFS4_1](https://github.com/dw2102/DHFS4_1)
    - Open-source implementation parsing Dahua DHFS 4.1 sector allocation blocks and frame-level demultiplexing.

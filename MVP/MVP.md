@@ -72,6 +72,22 @@ Each feature below has its own dedicated folder inside `MVP/features/` with a co
 
 ---
 
+## Critical Field Gaps & Reality Check ("The Fumbles Note")
+
+> [!WARNING]
+> A detailed review of Indian State FSL / Cyber Cell operational procedures and evidentiary standards (*Bharatiya Sakshya Adhiniyam 2023 Section 63* and *Tomaso Bruno v State of UP 2015*) highlighted 5 critical operational and legal gaps in our initial MVP assumptions.
+> 
+> See the full technical breakdown: **[[22-forensic-reality-check-and-mvp-fumbles|22. Forensic Reality Check & Identified MVP Gaps (Fumbles Note)]]** ([Markdown Link](./design-notes/22-forensic-reality-check-and-mvp-fumbles.md)).
+
+### The 5 Identified Gaps at a Glance:
+1. **Clock Drift vs. Real-World Wall-Time (IST / NTP):** We built relative inter-camera delays, but missed on-scene DVR RTC drift calibration (1–5 min/month) required to correlate video with CDR, mobile tower dumps, and police GD entries.
+2. **The "Missing Gaps" Dilemma (*Tomaso Bruno*):** Motion-only recording voids look identical on-disk to deleted footage or overwritten sectors; Locus must parse DVR system event logs to affirmatively prove sensor inactivity in court.
+3. **The "Cloud NVR" Trap:** Modern NVRs (Hik-Connect / CP Plus iCloud) use local HDDs as sparse caches; Locus must flag cloud profiles and ingest vendor cloud returns under BNSS Section 94.
+4. **Statutory Admissibility (BSA 2023 Section 63):** Generic PDF reports are legally insufficient; Locus must generate the statutory Section 63 Certificate with custodian declarations, device provenance, and drift tables.
+5. **Courtroom Deliverables:** Prosecutors require numbered standalone **I-Frame Stills (PNG + SHA-256)** for paper charge sheet annexures, and a **Ring Buffer Overwrite Calculator** to verify retention feasibility.
+
+---
+
 ## System Overview Diagram
 
 ```
