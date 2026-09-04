@@ -1,13 +1,15 @@
 # Assumptions & Decisions: Acquisition, Identification, and Parsing
 
-*These notes are fragments collected during the design phase. They will be used to construct the final, hardened feature flow.*
+*Key engineering assumptions and architectural decisions for Acquisition, Identification, and Parsing in Locus.*
 
 ---
 
-## 1. Disk Acquisition (Write-Blocking)
-- **Initial Assumption:** Python's `open(filepath, 'rb')` is sufficient to protect physical evidence.
-- **The Catch / Edge Case:** If an investigator mounts a raw physical drive (e.g., `/dev/sdb`), the host OS (Windows/Linux) will immediately write hidden metadata to it, destroying forensic integrity before Locus even opens the handle.
-- **Final Decision:** Locus will strictly ingest **only forensic image files** (`.dd`, `.raw`, `.img`). The investigator is responsible for using a hardware write-blocker to create this image file prior to loading it into Locus. Locus will not interact directly with raw physical block devices.
+## 1. Disk Acquisition & Ingestion Modalities
+- **Initial Assumption:** Python's `open(filepath, 'rb')` alone is sufficient to protect physical evidence.
+- **The Catch / Edge Case:** If an investigator mounts a raw physical drive (e.g., `/dev/sdb`), the host OS (Windows/Linux) can write hidden metadata or automount volumes, compromising forensic integrity. Standard Python `open` also crashes on physical bad sectors.
+- **Final Decision:** Locus implements a dual-path ingestion architecture:
+  1. **Path A: Live Physical Device Acquisition (Embedded `dc3dd`):** When connecting raw physical drives via a hardware write-blocker, Locus executes `dc3dd` as an elevated background subprocess with `conv=noerror,sync` (bad sector defense) and simultaneous dual hashing (`hash=sha256 hash=md5`) directly to a bitstream `.raw`/`.dd` image.
+  2. **Path B: Pre-Existing Forensic Image Ingestion:** Direct file intake of pre-acquired `.dd`, `.raw`, or `.img` files, locked in strict read-only mode with immediate baseline dual-hash verification.
 
 ## 2. Device & OEM Identification
 - **Initial Assumption:** The DVR's magic signature (e.g., `DHAV`) is always at Sector 0 or Sector 1.

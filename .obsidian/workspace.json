@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MVP/MVP.md",
+                "file": "MVP/design-notes/01-acquisition-and-parsing.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "MVP"
+              "title": "01-acquisition-and-parsing"
             }
           }
         ]
@@ -191,8 +191,11 @@
   },
   "active": "d6fa56884306088b",
   "lastOpenFiles": [
-    "MVP/design-notes/22-forensic-reality-check-and-mvp-fumbles.md",
+    "MVP/features/README.md",
+    "MVP/design-notes/README.md",
+    "MVP/features/ai-analytics/ai-analytics.md",
     "MVP/MVP.md",
+    "MVP/design-notes/22-forensic-reality-check-and-mvp-fumbles.md",
     "resources/nist-cfreds-datasets.md",
     "locus.md",
     "project-overview.md",
@@ -214,11 +217,8 @@
     "on-boarding/01-welcome-and-problem-statement.md",
     "on-boarding/04-developer-workflow-and-reading-guide.md",
     "on-boarding/03-architecture-and-tech-stack.md",
-    "MVP/development/backend/flow-08-cryptographic-verification-and-export.md",
     "MVP/development/backend",
     "MVP/development/frontend",
-    "MVP/development/backend/flow-09-forensic-pdf-reporting.md",
-    "MVP/development/backend/flow-06-ai-video-analytics.md",
     "on-boarding",
     "MVP/development/code_snapshot/uv.lock",
     "MVP/development/code_snapshot/tests/__pycache__/test_cases.cpython-314-pytest-9.1.1.pyc",
