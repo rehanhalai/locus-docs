@@ -25,3 +25,5 @@
 - [[team-and-recruitment]] — Team composition, roles, and recruitment pitch
 - [[deliverables-and-roadmap]] — Project roadmap, SIH deliverables, and demo plan
 - [[00-index]] — Reverse engineering crash course & core concepts
+- [[resources/reading-resources|Reading Resources & Research Papers]] — **Indian Forensic Guides, MDPI 2025 Paper & Legal Frameworks**
+- [[resources/datasets|Forensic Test Datasets]] — **NIST CFReDS (L0–L5), Heimvision E01 & Forensic Benchmark Images**
