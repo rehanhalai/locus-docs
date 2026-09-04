@@ -84,7 +84,9 @@ Stores the non-destructive time correction applied to each channel.
 | `drift_rate_ppm` | `REAL` | `1.5` | Clock drift in parts per million |
 | `anchor_raw_timestamp` | `INTEGER` | `1718901234` | The raw timestamp used as the reference point |
 | `anchor_calibrated_utc` | `INTEGER` | `1718901534` | The known real-world time at that reference |
-| `calibration_method` | `TEXT` | `"OSD_VISUAL"` | How the offset was determined |
+| `seizure_ntp_epoch` | `INTEGER` | `1718902000` | NTP wall time captured on scene at seizure |
+| `seizure_osd_epoch` | `INTEGER` | `1718902180` | DVR on-screen display time at seizure |
+| `calibration_method` | `TEXT` | `"SEIZURE_DRIFT_IST"` | How offset was determined (`SEIZURE_DRIFT_IST`, `OSD_VISUAL`, `INCIDENT_ANCHOR`) |
 | `calibrated_by` | `TEXT` | `"Officer Smith"` | Who performed the calibration |
 
 ---
@@ -105,8 +107,19 @@ Stores the non-destructive time correction applied to each channel.
 3. Locus compares the header timestamp at that frame (`13:55:00`) and calculates the offset (`+5 minutes`).
 
 ### Method 3: External Incident Anchor
-1. The investigator has a police dispatch log (CAD) that says "Call received at exactly `14:22:33 IST`."
-2. They find the moment the phone rings on the CCTV and anchor it to `14:22:33`.
+1. The investigator has a police dispatch log (CAD) or Call Detail Record (CDR) that says "Call received / Tower ping at exactly `14:22:33 IST`."
+2. They find the moment the phone rings or the suspect raises their phone on the CCTV and anchor it to `14:22:33`.
+
+### Method 4: On-Scene Seizure Anchor & Linear Drift Propagation (Forensic Standard)
+In real-world Indian casework (per State FSL & CFSL protocols), DVRs run on un-synchronized RTC chips that drift **1 to 5 minutes per month**. To map burned-in video timestamps to Real-World Wall Time (Indian Standard Time / IST):
+1. **On-Scene Seizure Anchor:** The investigating officer photographs the live DVR monitor screen displaying the on-screen clock alongside an NTP-synchronized wristwatch/device in the same camera frame.
+   - *Example:* At seizure, DVR OSD reads `21:48:00 IST`, while the NTP watch reads `21:51:00 IST` (DVR is 3 minutes slow; $\Delta t_{\text{seizure}} = -180\text{ s}$).
+2. **Linear Drift Propagation Calculation:** If the crime occurred 14 days prior to seizure, Locus propagates the drift rate backwards assuming typical standalone RTC quartz drift:
+   $$\Delta t(t) = \Delta t_{\text{seizure}} - \left[\text{Drift Rate (min/day)} \times \text{Days Prior}\right]$$
+   $$\text{Calibrated IST Wall Time}(t) = t_{\text{DVR}} - \Delta t(t)$$
+3. **Dual Timestamp Display:** Locus displays both timestamps simultaneously on the playback head:
+   - **`[Raw OSD Time: 21:42:35]`** (preserves pixel fidelity for cross-examination).
+   - **`[Calibrated IST: 21:45:35]`** (enables 1:1 correlation with CDR, mobile tower dumps, and police GD diary entries).
 
 ---
 
@@ -116,22 +129,19 @@ Stores the non-destructive time correction applied to each channel.
 1. Channel Discovery ──────────► After carving, populate `camera_channels` from `stream_headers`
                                            │
                                            ▼
-2. Calibration Trigger ────────► Investigator clicks "Sync Cameras" in the UI
+2. Calibration Trigger ────────► Officer inputs Seizure Photo Anchor (DVR OSD vs. NTP Watch)
                                            │
                                            ▼
-3. Visual Anchor Selection ────► Investigator pauses two cameras at the same real-world event
+3. Offset & Drift Math ────────► Locus computes linear drift rate backwards to incident date
                                            │
                                            ▼
-4. Offset Calculation ─────────► Locus computes Δt (e.g., Camera 2 is +310,000 ms ahead)
+4. SQLite Calibration Write ───► INSERT into `timeline_calibrations` (non-destructive sticky note)
                                            │
                                            ▼
-5. SQLite Calibration Write ───► INSERT into `timeline_calibrations` (non-destructive sticky note)
+5. Master Playhead Activation ─► 60 Hz master loop starts with Dual Timestamp readouts (Raw & IST)
                                            │
                                            ▼
-6. Master Playhead Activation ─► 60 Hz master loop starts, querying each channel's normalized time
-                                           │
-                                           ▼
-7. Synchronized Grid Playback ─► All cameras display frames for the same real-world second
+6. Synchronized Grid Playback ─► All cameras display frames for the exact same real-world second
 ```
 
 ---
@@ -146,23 +156,27 @@ sequenceDiagram
     participant API as FastAPI Backend
     participant DB as SQLite DB
 
-    Officer->>UI: Pauses Camera 1 at lightning flash (header: 14:00:00)
-    Officer->>UI: Pauses Camera 2 at same flash (header: 14:05:10)
-    Officer->>UI: Clicks "Set Anchor"
-    UI->>API: POST /api/timeline/calibrate {ch1_ts: 1718892000, ch2_ts: 1718892310, anchor_utc: 1718892000}
-    API->>API: Calculate Δt → Camera 2 offset = -310,000 ms
-    API->>DB: INSERT INTO timeline_calibrations (channel_id=2, time_offset_ms=-310000, method="OSD_VISUAL")
-    API-->>UI: 200 OK {channel_id: 2, offset_ms: -310000, status: "calibrated"}
-    UI->>UI: Activate 60 Hz Master Clock → Synchronize all grid tiles
-    UI->>Officer: Cameras now play in perfect sync
+    Officer->>UI: Inputs Seizure Anchor (DVR OSD: 21:48, NTP Watch: 21:51)
+    Officer->>UI: Selects target incident date (14 days prior)
+    UI->>API: POST /api/timeline/calibrate {channel_id: 1, seizure_osd: 1718892480, seizure_ntp: 1718892660, drift_rate_ppm: 2.1}
+    API->>API: Calculate backward drift → Offset at incident = -160,000 ms
+    API->>DB: INSERT INTO timeline_calibrations (channel_id=1, time_offset_ms=-160000, method="SEIZURE_DRIFT_IST")
+    API-->>UI: 200 OK {channel_id: 1, calibrated_offset_ms: -160000, status: "calibrated"}
+    UI->>UI: Activate 60 Hz Master Clock → Dual Timestamp Display (Raw OSD + Calibrated IST)
+    UI->>Officer: Video now synchronizes with CDR and Mobile Tower timelines
 ```
 
 ---
 
 ## Handling Edge Cases
 
-- **Mixed Frame Rates:** If Camera 1 records at 30 FPS and Camera 2 at 10 FPS, the Master Clock tells Camera 2 to hold its current frame on screen for 3 ticks until its next timestamp arrives. No fake frames are generated.
-- **Recording Gaps:** If a motion-triggered camera wasn't recording at a given time, Locus displays a black tile with `[ NO RECORDING AT THIS TIMESTAMP ]` instead of freezing on a stale frame.
+- **Mixed Frame Rates:** If Camera 1 records at 30 FPS and Camera 2 at 10 FPS, the Master Clock tells Camera 2 to hold its current frame on screen for 3 ticks until its next timestamp arrives. No synthetic frames are generated.
+- **Motion-Only Recording Gaps & The *Tomaso Bruno* Presumption Defense:**
+  Over 80% of small-business DVRs in India record on motion detection. Gaps between motion events look identical on-disk to deleted footage. Under the Supreme Court's ruling in *Tomaso Bruno v State of UP (2015)* and **BSA 2023 Section 119**, unexplained gaps create an adverse presumption against the prosecution (evidence suppression).
+  - Locus inspects parsed **DVR System Event Logs** (alarm logs, sensor triggers, power states).
+  - If a gap is logged as sensor inactivity, Locus displays: `[ SENSOR IDLE — NO MOTION DETECTED (VERIFIED BY SYSTEM LOG) ]` with a green forensic verification badge.
+  - If a gap coincided with power loss: displays `[ RECORDER POWER FAILURE EVENT LOGGED ]`.
+  - This affirmatively proves to the court that footage was never recorded, defeating defense claims of evidence deletion.
 - **Frame-by-Frame Scrubbing:** Pressing the "Next Frame" button advances the master clock by the smallest frame delta among all active channels (e.g., 33ms for a 30 FPS camera), so no detail is ever skipped.
 
 ---

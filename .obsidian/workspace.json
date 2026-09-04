@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MVP/design-notes/01-acquisition-and-parsing.md",
+                "file": "MVP/features/forensic-reporting/forensic-reporting.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "01-acquisition-and-parsing"
+              "title": "forensic-reporting"
             }
           }
         ]
@@ -191,7 +191,11 @@
   },
   "active": "d6fa56884306088b",
   "lastOpenFiles": [
+    "MVP/features/timeline-sync/timeline-sync.md",
     "MVP/features/README.md",
+    "MVP/design-notes/01-acquisition-and-parsing.md",
+    "MVP/features/forensic-reporting/forensic-reporting.md",
+    "MVP/features/forensic-reporting",
     "MVP/design-notes/README.md",
     "MVP/features/ai-analytics/ai-analytics.md",
     "MVP/MVP.md",
@@ -214,9 +218,6 @@
     "MVP/design-notes/15-sector-metadata-and-header-parsing.md",
     "MVP/design-notes/13-dahua-cpplus-unified-engine.md",
     "on-boarding/02-core-features-and-analogies.md",
-    "on-boarding/01-welcome-and-problem-statement.md",
-    "on-boarding/04-developer-workflow-and-reading-guide.md",
-    "on-boarding/03-architecture-and-tech-stack.md",
     "MVP/development/backend",
     "MVP/development/frontend",
     "on-boarding",
@@ -225,7 +226,6 @@
     "MVP/development/code_snapshot/tests/__pycache__/test_acquisition_unit.cpython-314-pytest-9.1.1.pyc",
     "MVP/development/code_snapshot/tests/__pycache__/test_acquisition.cpython-314-pytest-9.1.1.pyc",
     "MVP/development/code_snapshot/tests/__pycache__/conftest.cpython-314-pytest-9.1.1.pyc",
-    "MVP/development/code_snapshot/tests/test_cases.py",
-    "MVP/development/code_snapshot/tests/test_acquisition.py"
+    "MVP/development/code_snapshot/tests/test_cases.py"
   ]
 }

@@ -48,9 +48,8 @@ The **Locus MVP** is structured into **8 core backend feature specifications** (
 #### 8. Cryptographic Hash Verification & Integrity Export
 - **What happens:** Upon export, Locus slices the carved video using zero-transcoding copy, calculates the output SHA-256/MD5 artifact hashes, and generates a cryptographic audit sidecar (`.sync.json`) linking the clip directly back to the baseline source image hash. On-demand whole-disk verification (`POST /api/verify`) is available for case closure.
 
-#### 9. Forensic Evidence PDF Report Export *(Future / UI Reporting Module)*
-- **What happens:** Compiles case metadata, baseline disk hashes, carved clip tables, AI detection summaries, and investigator audit logs into a legally formatted PDF report.
-- **Specification Status:** *Note: This feature is deferred from the current low-level backend technical specifications due to its straightforward UI/template nature (HTML/PDF rendering), but remains an integral component of the product roadmap.*
+#### 9. Forensic Reporting & Statutory Admissibility (BSA 2023 Section 63)
+- **What happens:** Compiles case metadata, baseline disk hashes, carved clip tables, and AI detection summaries, while automatically generating the statutory **BSA 2023 Section 63 Admissibility Certificate** and an itemized **Numbered I-Frame Stills Exhibit Pack (PNG + SHA-256)** for court submission.
 
 ---
 
@@ -64,11 +63,11 @@ Each feature below has its own dedicated folder inside `MVP/features/` with a co
 | 02 | [[device-identification]] | [device-identification.md](./features/device-identification/device-identification.md) | Automatic OEM & magic byte signature detection (Dahua, Hikvision, CP Plus, etc.) | **Complete** |
 | 03 | [[filesystem-parsing]] | [filesystem-parsing.md](./features/filesystem-parsing/filesystem-parsing.md) | Binary header decoding, sector mapping, and building the Master Sector Map in SQLite | **Complete** |
 | 04 | [[video-carving]] | [video-carving.md](./features/video-carving/video-carving.md) | Sector-level carving of raw H.264/H.265 frames with GOP alignment and zero-transcoding remuxing | **Complete** |
-| 05 | [[timeline-sync]] | [timeline-sync.md](./features/timeline-sync/timeline-sync.md) | Multi-camera timestamp normalization, non-destructive calibration layer, and 60 Hz master clock | **Complete** |
+| 05 | [[timeline-sync]] | [timeline-sync.md](./features/timeline-sync/timeline-sync.md) | Multi-camera timestamp normalization, on-scene IST drift calibration, and 60 Hz master clock | **Complete** |
 | 06 | [[ai-analytics]] | [ai-analytics.md](./features/ai-analytics/ai-analytics.md) | Local YOLOv8 object detection (persons, vehicles) & motion void indexing via ONNX Runtime | **Complete** |
 | 07 | [[evidence-search]] | [evidence-search.md](./features/evidence-search/evidence-search.md) | SQLite query layer for filtering, searching, and browsing AI detection events | **Complete** |
 | 08 | [[evidence-hashing]] | [evidence-hashing.md](./features/evidence-hashing/evidence-hashing.md) | Cryptographic hash verification, zero-transcoding export, and audit trail sidecar generation | **Complete** |
-| 09 | `forensic-reporting` | *Deferred* | Automated Forensic Evidence PDF report export with hash parity tables | *Future / Low Complexity* |
+| 09 | [[forensic-reporting]] | [forensic-reporting.md](./features/forensic-reporting/forensic-reporting.md) | Courtroom-ready PDF reports, statutory BSA 2023 Section 63 Admissibility Certificates, and numbered I-frame still exhibits | **Complete** |
 
 ---
 
