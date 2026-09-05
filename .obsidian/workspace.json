@@ -11,14 +11,12 @@
             "id": "d6fa56884306088b",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "excalidraw",
               "state": {
-                "file": "resources/reading-resources.md",
-                "mode": "source",
-                "source": false
+                "file": "MVP/visual.md"
               },
-              "icon": "lucide-file",
-              "title": "reading-resources"
+              "icon": "excalidraw-icon",
+              "title": "visual"
             }
           }
         ]
@@ -191,11 +189,13 @@
   },
   "active": "d6fa56884306088b",
   "lastOpenFiles": [
+    "resources/reading-resources.md",
+    "MVP/visual.md",
+    "MVP/PPT brainstroming.md",
     "MVP/design-notes/06-finalized-input-acquisition-spec.md",
     "locus.md",
     "resources/README.md",
     "resources/datasets.md",
-    "resources/reading-resources.md",
     "resources/resources.md",
     "post-mvp-forensic-flow.md",
     "project-overview.md",
@@ -211,13 +211,11 @@
     "resources/nist-cfreds-datasets.md",
     "scope-and-goals.md",
     "deliverables-and-roadmap.md",
-    "MVP/visual.md",
     "MVP/features/evidence-search/evidence-search.md",
     "MVP/development/backend/flow-01-acquisition-and-ingestion.md",
     "MVP/development/backend/01-acquisition-and-dc3dd-setup.md",
     "MVP/development/frontend/layout design.md",
     "compatible-vendors.md",
-    "MVP/features/disk-imaging/acquisition canvas.md",
     "MVP/development/backend",
     "MVP/development/frontend",
     "on-boarding",
