@@ -11,10 +11,14 @@
             "id": "d6fa56884306088b",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "resources/reading-resources.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "reading-resources"
             }
           }
         ]
@@ -187,6 +191,7 @@
   },
   "active": "d6fa56884306088b",
   "lastOpenFiles": [
+    "MVP/design-notes/06-finalized-input-acquisition-spec.md",
     "locus.md",
     "resources/README.md",
     "resources/datasets.md",
@@ -213,7 +218,6 @@
     "MVP/development/frontend/layout design.md",
     "compatible-vendors.md",
     "MVP/features/disk-imaging/acquisition canvas.md",
-    "MVP/features/disk-imaging/disk-imaging.md",
     "MVP/development/backend",
     "MVP/development/frontend",
     "on-boarding",

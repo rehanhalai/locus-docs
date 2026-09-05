@@ -27,8 +27,8 @@ Dahua and CP PLUS utilize the proprietary **DHFS** (Dahua File System) and wrap 
 Hikvision DVRs utilize the **HKFS** (Hikvision File System) and an indexed master **B+ Tree** architecture (`HIKBTREE`).
 
 ### Published Research & Reverse-Engineering Sources:
-1. **Academic Paper:** *"Forensic Analysis of the Hikvision File System"* (Digital Forensics Magazine / ResearchGate).
-   - Documents the Master Sector header (Sector 0 / Sector 2048), sector size (512 bytes), data block cluster size (2MB/16MB), and the hierarchical `HIKBTREE` index layout storing channel recording ranges.
+1. **Academic Paper:** *"Analysis of the HIKVISION DVR File System"* by Jaehyeok Han, Doowon Jeong, Sangjin Lee (Korea University), published in *Digital Forensics and Cyber Crime* (Springer LNICST Vol. 157, pp. 189–199, DOI: `10.1007/978-3-319-25512-5_13`, ResearchGate: 285429692).
+   - Documents the Master Sector header (`HIKVISION@HANGZHOU` at offset `0x200`), sector size (512 bytes), data block cluster size (1 GB / 2MB / 16MB), System Logs partition, and the hierarchical `HIKBTREE` index layout storing channel recording ranges.
 2. **Forensic Tools & Extraction Repositories:**
    - [vishwajitsarnobat/HIKVISION-DVR-Tool](https://github.com/vishwajitsarnobat/HIKVISION-DVR-Tool): Full parsing of HKFS filesystem, HIKBTREE parsing, and stream remuxing.
    - [fmpfeifer/hikextractor](https://github.com/fmpfeifer/hikextractor): Python extractor for Hikvision raw disk partitions.
